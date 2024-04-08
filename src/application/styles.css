@@ -1,0 +1,96 @@
+/* Styles for the scene graph in LifeGUI.fxml */
+
+.root {
+    /* 
+     * Apparently FX doesn't (currently?) support CSS variables, but does 
+     * support "looked-up colors". 
+     */
+    BG-PRIMARY: #576F8D;
+    BG-SECONDARY: white;
+    TEXT-PRIMARY: black;
+    BIG-TEXT-PRIMARY: white;
+    BORDER-COLOR: black;
+}
+
+.text, .button {
+    -fx-font-family: 'Cooper Black';
+    -fx-fill: TEXT-PRIMARY;
+    -fx-text-alignment: center;
+}
+
+.big-text {
+    -fx-font-family: 'Cooper Black';
+    -fx-fill: BIG-TEXT-PRIMARY;
+    -fx-stroke: BORDER-COLOR;
+    -fx-stroke-type: outside;
+    -fx-stroke-width: 5;
+    -fx-text-alignment: center;
+}
+
+.button {
+    -fx-content-display: center; 
+    
+    -fx-background-color: BG-SECONDARY; 
+    -fx-background-insets: 1; 
+    
+    -fx-border-color: BORDER-COLOR; 
+    -fx-border-width: 3;
+    
+    -fx-font-size: 18;
+}
+
+#app-container {
+    -fx-max-width: infinity; 
+    -fx-max-height: infinity; 
+    
+    -fx-pref-width: 800;
+    -fx-pref-height: 600; 
+    
+    -fx-background-color: BG-PRIMARY; 
+    -fx-background-insets: 8; 
+    
+    -fx-border-color: BORDER-COLOR;
+    -fx-border-width: 3; 
+    -fx-border-insets: 8;
+}
+
+#top-box {
+    -fx-pref-width: 200; 
+    -fx-pref-height: 100; 
+    
+    -fx-alignment: center;
+}
+
+#title-text {
+     -fx-font-size: 36;
+}
+
+#center-pane {
+    -fx-border-color: BORDER-COLOR; 
+    -fx-border-width: 3; 
+    -fx-border-insets: 0 8 0 8; 
+}
+
+#canvas-holder {
+    -fx-background-color: lightgray;
+}
+
+#bottom-group * {
+    -fx-alignment: center;    
+}
+
+#bottom-box-1 {
+    -fx-pref-width: 200; 
+    -fx-pref-height: 100; 
+    -fx-spacing: 20;
+    -fx-padding: 10;
+}
+
+#bottom-box-2 {
+    -fx-padding: 0 10 10 10;
+}
+
+#debug-info {
+    -fx-font-size: 16;
+    -fx-fill: ghostwhite;
+}
