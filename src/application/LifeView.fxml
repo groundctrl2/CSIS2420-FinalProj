@@ -36,7 +36,7 @@
         -->
         <AnchorPane id="center-pane" fx:id="centerPane" BorderPane.alignment="CENTER">
             <Pane id="canvas-holder" fx:id="canvasHolder">
-                <Canvas id="world-canvas" fx:id="canvasOfLife" />
+                <Canvas id="canvas-of-life" fx:id="canvas" />
             </Pane>
         </AnchorPane>
     </center>

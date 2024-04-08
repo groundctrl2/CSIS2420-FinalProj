@@ -4,8 +4,6 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class LifeApp extends Application {
@@ -23,7 +21,7 @@ public class LifeApp extends Application {
 			stage.setScene(scene);
 			stage.show();
 
-            drawSomething(control.canvasOfLife);
+			control.drawGrid();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -31,15 +29,5 @@ public class LifeApp extends Application {
 
 	public static void main(String[] args) {
 		launch(args);
-	}
-
-	private void drawSomething(Canvas canvas) {
-	    double w = canvas.getWidth();
-	    double h = canvas.getHeight();
-	    System.out.println(w + ", " + h);
-
-	    var g = canvas.getGraphicsContext2D();
-	    g.setFill(Color.SPRINGGREEN);
-	    g.fillRect(10, 10, w - 20, h - 20);
 	}
 }

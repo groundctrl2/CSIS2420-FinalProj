@@ -3,11 +3,13 @@ package application;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
 public class ViewController {
@@ -21,7 +23,7 @@ public class ViewController {
     // center stuff
     @FXML AnchorPane centerPane;
     @FXML Pane canvasHolder;
-    @FXML Canvas canvasOfLife;
+    @FXML Canvas canvas;
 
     // bottom stuff
     @FXML VBox bottomGroup;
@@ -33,6 +35,21 @@ public class ViewController {
     @FXML Button stepButton;
     @FXML HBox bottomBox2;
     @FXML Text debugInfo;
+
+    // temporary
+    @FXML Button debug;
+
+    // Canvas stuff.
+    private static final int CELL_INTERIOR_SIZE = 14;
+    private static final int CELL_BORDER_WIDTH = 2; // preferably a multiple of 2
+
+    private double width;
+    private double height;
+    // TODO: deal with remainders
+    private int cols;
+    private int rows;
+
+    private boolean[][] grid;
 
     public void initialize() {
         adjustCanvasDimensionsForBorderJank();
@@ -59,8 +76,20 @@ public class ViewController {
        AnchorPane.setBottomAnchor(canvasHolder, insets.getBottom());
        AnchorPane.setLeftAnchor(canvasHolder, insets.getLeft());
 
-       canvasOfLife.widthProperty().bind(canvasHolder.widthProperty());
-       canvasOfLife.heightProperty().bind(canvasHolder.heightProperty());
+       canvas.widthProperty().bind(canvasHolder.widthProperty());
+       canvas.heightProperty().bind(canvasHolder.heightProperty());
+
+       // clear and redraw on resizes
+       canvas.widthProperty().addListener(observable -> drawGrid());
+       canvas.heightProperty().addListener(observable -> drawGrid());
+
+       canvas.setOnMouseMoved(event -> {
+           int x = (int) event.getX();
+           int y = (int) event.getY();
+           debugInfo.setText("coordinate: (%d, %d)".formatted(x, y));
+       });
+
+       canvas.setOnMouseClicked(this::handleCanvasMouseClick);
     }
 
     private void initButtonHandlers() {
@@ -83,5 +112,55 @@ public class ViewController {
         stepButton.setOnAction(event -> {
             debugInfo.setText("You clicked the CLEAR button");
         });
+    }
+
+    // call in LifeApp#main() after stage.show()
+    void drawGrid() {
+        width = canvas.getWidth();
+        height = canvas.getHeight();
+
+        var g = canvas.getGraphicsContext2D();
+        g.setFill(Color.WHITE);
+        g.fillRect(0, 0, width, height);
+
+        g.setStroke(Color.LIGHTGRAY);
+        g.setLineWidth(CELL_BORDER_WIDTH);
+        int stride = CELL_INTERIOR_SIZE + CELL_BORDER_WIDTH;
+        cols = (int) width / stride;
+        rows = (int) height / stride;
+        grid = new boolean[rows][cols];
+
+        // draw verticals
+        for (int x = 0; x < width; x += stride)
+            g.strokeLine(x, 0, x, height);
+
+        // draw horizontals
+        for (int y = 0; y < height; y += stride)
+            g.strokeLine(0, y, width, y);
+    }
+
+    void handleCanvasMouseClick(MouseEvent event) {
+        double x = event.getX();
+        double y = event.getY();
+
+        // convert from canvas coordinates to grid indices
+        // TODO: write helper methods to convert to and from coordinates
+        // to indices for later use.
+        int cellSize = CELL_INTERIOR_SIZE + CELL_BORDER_WIDTH;
+        int r = (int) (y / height * rows);
+        int c = (int) (x / width * cols);
+
+        // top-left coordinates cell
+        double x0 = (CELL_BORDER_WIDTH / 2) + c*cellSize;
+        double y0 = (CELL_BORDER_WIDTH / 2) + r*cellSize;
+
+        // toggle cell
+        // TODO: handle orphan cells on the right and bottom edges.
+        var g = canvas.getGraphicsContext2D();
+        boolean alive = (grid[r][c] = !grid[r][c]);
+        g.setFill(alive ? Color.BLACK : Color.WHITE);
+        g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
+
+        debugInfo.setText("You clicked on cell (%d, %d)!".formatted(r, c));
     }
 }
