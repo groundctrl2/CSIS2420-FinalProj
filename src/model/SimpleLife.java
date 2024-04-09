@@ -57,6 +57,7 @@ public class SimpleLife implements ILife {
     @Override
     public void step(Callback action) {
         // TODO Auto-generated method stub
+        randomize();
     }
 
     @Override

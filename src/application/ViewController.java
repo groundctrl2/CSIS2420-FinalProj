@@ -1,5 +1,6 @@
 package application;
 
+import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
@@ -54,6 +55,10 @@ public class ViewController {
 
     private ILife model = new SimpleLife();
 
+    // animation stuff
+    private boolean isPlaying;
+    private long timestamp;
+
     public void initialize() {
         adjustCanvasDimensionsForBorderJank();
         initButtonHandlers();
@@ -96,8 +101,29 @@ public class ViewController {
     }
 
     private void initButtonHandlers() {
+        ILife.Callback stepCallback = (row, col, state) -> {
+            var g = canvas.getGraphicsContext2D();
+            double x0 = toXCoord(col);
+            double y0 = toYCoord(row);
+            g.setFill(state == CellState.ALIVE ? Color.BLACK : Color.WHITE);
+            g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
+        };
+
+        var timer = new AnimationTimer() {
+            @Override
+            public void handle(long now){
+                final long halfSecondInNanos = 1_000_000_000 / 2;
+                if ((now - timestamp) > halfSecondInNanos) {
+                    model.step(stepCallback);
+                    drawGrid();
+                    timestamp = now;
+                }
+            }
+        };
+
         clearButton.setOnAction(event -> {
             debugInfo.setText("You clicked the CLEAR button");
+            pauseButton.fire();
             model.clear();
             drawGrid();
         });
@@ -110,14 +136,23 @@ public class ViewController {
 
         pauseButton.setOnAction(event -> {
             debugInfo.setText("You clicked the PAUSE button");
+            timer.stop();
+            isPlaying = false;
         });
 
         playButton.setOnAction(event -> {
             debugInfo.setText("You clicked the PLAY button");
+            timer.start();
+            isPlaying = true;
         });
 
         stepButton.setOnAction(event -> {
             debugInfo.setText("You clicked the CLEAR button");
+
+            if (!isPlaying) {
+                model.step(stepCallback);
+                drawGrid();
+            }
         });
     }
 
