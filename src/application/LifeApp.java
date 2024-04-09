@@ -20,8 +20,6 @@ public class LifeApp extends Application {
 			stage.setTitle("Version 0.1");
 			stage.setScene(scene);
 			stage.show();
-
-			control.drawGrid();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

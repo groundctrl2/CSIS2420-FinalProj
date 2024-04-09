@@ -11,6 +11,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import model.CellState;
+import model.ILife;
+import model.SimpleLife;
 
 public class ViewController {
     // overall layout
@@ -36,20 +39,20 @@ public class ViewController {
     @FXML HBox bottomBox2;
     @FXML Text debugInfo;
 
-    // temporary
-    @FXML Button debug;
-
-    // Canvas stuff.
+    // Grid/Canvas stuff.
     private static final int CELL_INTERIOR_SIZE = 14;
+    // Half the border belongs to one cell, and the other half to neigbor.
     private static final int CELL_BORDER_WIDTH = 2; // preferably a multiple of 2
+    // Size including border is: interior + 2*(border / 2)
+    private static final int CELL_SIZE = CELL_INTERIOR_SIZE + CELL_BORDER_WIDTH;
 
-    private double width;
-    private double height;
+    private double canvasWidth;
+    private double canvasHeight;
     // TODO: deal with remainders
-    private int cols;
-    private int rows;
+    private int ncols;
+    private int nrows;
 
-    private boolean[][] grid;
+    private ILife model = new SimpleLife();
 
     public void initialize() {
         adjustCanvasDimensionsForBorderJank();
@@ -64,7 +67,7 @@ public class ViewController {
         then bind the canvas dimensions to the inner pane.
 
         This should perfectly align the canvas inside the anchor pane
-        so that (0, 0) through (canvas width, canvas height) is
+        so that (0, 0) through (canvas canvasWidth, canvas canvasHeight) is
         immediately inside the borders.
 
         There's probably a better way to accomplish this,
@@ -80,8 +83,8 @@ public class ViewController {
        canvas.heightProperty().bind(canvasHolder.heightProperty());
 
        // clear and redraw on resizes
-       canvas.widthProperty().addListener(observable -> drawGrid());
-       canvas.heightProperty().addListener(observable -> drawGrid());
+       canvas.widthProperty().addListener(observable -> resizeGrid());
+       canvas.heightProperty().addListener(observable -> resizeGrid());
 
        canvas.setOnMouseMoved(event -> {
            int x = (int) event.getX();
@@ -95,10 +98,14 @@ public class ViewController {
     private void initButtonHandlers() {
         clearButton.setOnAction(event -> {
             debugInfo.setText("You clicked the CLEAR button");
+            model.clear();
+            drawGrid();
         });
 
         randomButton.setOnAction(event -> {
             debugInfo.setText("You clicked the RANDOM button");
+            model.randomize();
+            drawGrid();
         });
 
         pauseButton.setOnAction(event -> {
@@ -114,53 +121,87 @@ public class ViewController {
         });
     }
 
-    // call in LifeApp#main() after stage.show()
-    void drawGrid() {
-        width = canvas.getWidth();
-        height = canvas.getHeight();
+    /** Convert from y-coordinate to row index, rounding down */
+    private int toRowIndex(double y) {
+        return Math.min((int) (y / CELL_SIZE), nrows - 1);
+    }
 
+    /** Convert from x-coordinate to column index, rounding down */
+    private int toColIndex(double x) {
+        return Math.min((int) (x / CELL_SIZE), ncols - 1);
+    }
+
+    // TODO: check edge cases of coordinate-to-index conversions (rounding errors?)
+
+    /** Convert from row index to y-coordinate of the top-left of cell interior */
+    private double toYCoord(int row) {
+        return (CELL_BORDER_WIDTH / 2) + row*CELL_SIZE;
+    }
+
+    /** Convert from column index to x-coordinate of the top-left of cell interior */
+    private double toXCoord(int col) {
+        return (CELL_BORDER_WIDTH / 2) + col*CELL_SIZE;
+    }
+
+    void resizeGrid() {
+        canvasWidth = canvas.getWidth();
+        canvasHeight = canvas.getHeight();
+        ncols = (int) canvasWidth / CELL_SIZE;
+        nrows = (int) canvasHeight / CELL_SIZE;
+        model.resize(nrows, ncols);
+
+        drawGrid();
+    }
+
+    void drawGrid() {
         var g = canvas.getGraphicsContext2D();
         g.setFill(Color.WHITE);
-        g.fillRect(0, 0, width, height);
-
+        g.fillRect(0, 0, canvasWidth, canvasHeight);
         g.setStroke(Color.LIGHTGRAY);
         g.setLineWidth(CELL_BORDER_WIDTH);
-        int stride = CELL_INTERIOR_SIZE + CELL_BORDER_WIDTH;
-        cols = (int) width / stride;
-        rows = (int) height / stride;
-        grid = new boolean[rows][cols];
 
         // draw verticals
-        for (int x = 0; x < width; x += stride)
-            g.strokeLine(x, 0, x, height);
+        for (int x = 0; x < canvasWidth; x += CELL_SIZE)
+            g.strokeLine(x, 0, x, canvasHeight);
 
         // draw horizontals
-        for (int y = 0; y < height; y += stride)
-            g.strokeLine(0, y, width, y);
+        for (int y = 0; y < canvasHeight; y += CELL_SIZE)
+            g.strokeLine(0, y, canvasWidth, y);
+
+        // fill in cells which are alive according to the model
+        g.setFill(Color.BLACK);
+
+        model.forAllLife((row, col, state) -> {
+            double x0 = toXCoord(col);
+            double y0 = toYCoord(row);
+            g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
+        });
     }
 
     void handleCanvasMouseClick(MouseEvent event) {
+        var g = canvas.getGraphicsContext2D();
+
         double x = event.getX();
         double y = event.getY();
 
-        // convert from canvas coordinates to grid indices
-        // TODO: write helper methods to convert to and from coordinates
-        // to indices for later use.
-        int cellSize = CELL_INTERIOR_SIZE + CELL_BORDER_WIDTH;
-        int r = (int) (y / height * rows);
-        int c = (int) (x / width * cols);
+        int row = toRowIndex(y);
+        int col = toColIndex(x);
 
         // top-left coordinates cell
-        double x0 = (CELL_BORDER_WIDTH / 2) + c*cellSize;
-        double y0 = (CELL_BORDER_WIDTH / 2) + r*cellSize;
+        double x0 = toXCoord(col);
+        double y0 = toYCoord(row);
 
-        // toggle cell
-        // TODO: handle orphan cells on the right and bottom edges.
-        var g = canvas.getGraphicsContext2D();
-        boolean alive = (grid[r][c] = !grid[r][c]);
-        g.setFill(alive ? Color.BLACK : Color.WHITE);
+        if (model.get(row, col) == CellState.DEAD) {
+            model.set(row, col, CellState.ALIVE);
+            g.setFill(Color.BLACK);
+        }
+        else { // (model.get(row, col) == CellState.ALIVE)
+            model.set(row,  col, CellState.DEAD);
+            g.setFill(Color.WHITE);
+        }
+
         g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
 
-        debugInfo.setText("You clicked on cell (%d, %d)!".formatted(r, c));
+        debugInfo.setText("You clicked on cell (%d, %d)!".formatted(row, col));
     }
 }
