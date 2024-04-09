@@ -1,22 +1,27 @@
 package application;
 
 import javafx.application.Application;
-import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
 
 public class LifeApp extends Application {
-	private static final int WIDTH = 1200;
-	private static final int HEIGHT = 800;
+	private static final int WIDTH = 800;
+	private static final int HEIGHT = 600;
 
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage stage) {
 		try {
-			BorderPane root = new BorderPane();
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("LifeView.fxml"));
+			Parent root = loader.load();
+			ViewController control = (ViewController) loader.getController();
 			Scene scene = new Scene(root, WIDTH, HEIGHT);
-			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-			primaryStage.setScene(scene);
-			primaryStage.show();
+			stage.setTitle("Version 0.1");
+			stage.setScene(scene);
+			stage.show();
+
+			control.drawGrid();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
