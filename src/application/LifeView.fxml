@@ -44,14 +44,13 @@
     <bottom>
         <VBox id="bottom-group" fx:id="bottomGroup" BorderPane.alignment="CENTER">
             <HBox id="bottom-box-1" fx:id="bottomBox1">
-                <Button id="clear-button"  fx:id="clearButton"  styleClass="button" text="CLEAR" />
-                <Button id="random-button" fx:id="randomButton" styleClass="button" text="RANDOM" />
-                <Button id="pause-button"  fx:id="pauseButton"  styleClass="button" text="PAUSE" />
-                <Button id="play-button"   fx:id="playButton"   styleClass="button" text="PLAY" />
-                <Button id="step-button"   fx:id="stepButton"   styleClass="button" text="STEP" />
+                <Button id="clear-button"      fx:id="clearButton"     styleClass="cancel-button" text="CLEAR" />
+                <Button id="random-button"     fx:id="randomButton"    styleClass="cancel-button" text="RANDOM" />
+                <Button id="pause-play-button" fx:id="pausePlayButton" styleClass="app-button" text="PLAY" />
+                <Button id="step-button"       fx:id="stepButton"      styleClass="app-button" text="STEP" />
             </HBox>
             <HBox id="bottom-box-2" fx:id="bottomBox2">
-                <Text id="debug-info" fx:id="debugInfo" styleClass="text" text="Nothing to report" />
+                <Text id="debug-info" fx:id="debugInfo" text="Nothing to report" />
             </HBox>
         </VBox>
     </bottom>

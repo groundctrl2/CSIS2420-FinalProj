@@ -18,27 +18,26 @@ import model.SimpleLife;
 
 public class ViewController {
     // overall layout
-    @FXML BorderPane appContainer;
+    @FXML private BorderPane appContainer;
 
     // top stuff
-    @FXML HBox topBox;
-    @FXML Text titleText;
+    @FXML private HBox topBox;
+    @FXML private Text titleText;
 
     // center stuff
-    @FXML AnchorPane centerPane;
-    @FXML Pane canvasHolder;
-    @FXML Canvas canvas;
+    @FXML private AnchorPane centerPane;
+    @FXML private Pane canvasHolder;
+    @FXML private Canvas canvas;
 
     // bottom stuff
-    @FXML VBox bottomGroup;
-    @FXML HBox bottomBox1;
-    @FXML Button clearButton;
-    @FXML Button randomButton;
-    @FXML Button pauseButton;
-    @FXML Button playButton;
-    @FXML Button stepButton;
-    @FXML HBox bottomBox2;
-    @FXML Text debugInfo;
+    @FXML private VBox bottomGroup;
+    @FXML private HBox bottomBox1;
+    @FXML private Button clearButton;
+    @FXML private Button randomButton;
+    @FXML private Button pausePlayButton;
+    @FXML private Button stepButton;
+    @FXML private HBox bottomBox2;
+    @FXML private Text debugInfo;
 
     // Grid/Canvas stuff.
     private static final int CELL_INTERIOR_SIZE = 14;
@@ -123,8 +122,10 @@ public class ViewController {
         };
 
         clearButton.setOnAction(event -> {
+            if (isPlaying)
+                pausePlayButton.fire();
+
             debugInfo.setText("You clicked the CLEAR button");
-            pauseButton.fire();
             model.clear();
             drawGrid();
         });
@@ -135,20 +136,23 @@ public class ViewController {
             drawGrid();
         });
 
-        pauseButton.setOnAction(event -> {
-            debugInfo.setText("You clicked the PAUSE button");
-            timer.stop();
-            isPlaying = false;
-        });
+        pausePlayButton.setOnAction(event -> {
+            if (isPlaying) {
+                timer.stop();
+                pausePlayButton.setText("PLAY");
+                debugInfo.setText("You clicked the PAUSE button");
+            }
+            else {
+                timer.start();
+                pausePlayButton.setText("PAUSE");
+                debugInfo.setText("You clicked the PLAY button");
+            }
 
-        playButton.setOnAction(event -> {
-            debugInfo.setText("You clicked the PLAY button");
-            timer.start();
-            isPlaying = true;
+            isPlaying = !isPlaying;
         });
 
         stepButton.setOnAction(event -> {
-            debugInfo.setText("You clicked the CLEAR button");
+            debugInfo.setText("You clicked the STEP button");
 
             if (!isPlaying) {
                 model.step(stepCallback);
