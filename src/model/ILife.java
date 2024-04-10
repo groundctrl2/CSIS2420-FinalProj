@@ -54,4 +54,9 @@ public interface ILife {
      * Execute an action for all live cells.
      */
     void forAllLife(Callback action);
+    
+    /**
+     * @return int count of neighbors surrounding cell.
+     */
+    public int countNeighbors(int row, int col);
 }

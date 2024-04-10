@@ -113,6 +113,7 @@ public class ViewController {
             @Override
             public void handle(long now){
                 final long halfSecondInNanos = 1_000_000_000 / 2;
+                // Fastest I was able to get it to run was 34x/sec (halfSecondInNanos / 17)
                 if ((now - timestamp) > halfSecondInNanos) {
                     model.step(stepCallback);
                     drawGrid();

@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import edu.princeton.cs.algs4.Queue;
+
 /**
  * A basic implementation of Conway's Game of Life.
  */
@@ -56,8 +58,29 @@ public class SimpleLife implements ILife {
 
     @Override
     public void step(Callback action) {
-        // TODO Auto-generated method stub
-        randomize();
+    	Queue<Cell> queue = new Queue<>();
+    	
+    	// Calculate needed updates
+    	for (int r = 0; r < nrows; r++) {
+    		for (int c = 0; c < ncols; c++) {
+    			int aliveNeighbors = countNeighbors(r, c);
+    			
+    			if (get(r, c) == CellState.ALIVE) {
+    				if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if between 2-3 neighbors.
+    					queue.enqueue(new Cell(r, c, CellState.DEAD));
+    			}
+    			else { // if (get(r, c) == CellState.DEAD)
+    				if (aliveNeighbors == 3) // Dead cell with 3 neighbors becomes alive.
+    					queue.enqueue(new Cell(r, c, CellState.ALIVE));
+    			}
+    		}	
+    	}
+    	
+    	// Make needed updates (done afterwards to prevent invalid updates)
+    	while (!queue.isEmpty()) {
+    		Cell cell = queue.dequeue();
+    		set(cell.row(), cell.col(), cell.state());
+    	}
     }
 
     @Override
@@ -65,6 +88,27 @@ public class SimpleLife implements ILife {
         for (int r = 0; r < nrows; r++)
             for (int c = 0; c < ncols; c++)
                 if (world[r][c] == CellState.ALIVE)
-                    action.invoke(r, c, world[r][c]);
+                	action.invoke(r, c, world[r][c]);
+    }
+    
+    /**
+     * Returns count how many of 8 neighbors alive (wraps around).
+     * @TODO replace with adjacency list alive count. 
+     * 
+     * @return int count of alive neighbors surrounding cell
+     */
+    @Override
+    public int countNeighbors(int row, int col) {
+    	int count = 0;
+    	int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows};
+        int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};
+    	
+    	for (int r : rowOffsets)
+    		for (int c : colOffsets)
+    			if (r != row || c != col) // Disclude current cell
+    				if (get(r, c) == CellState.ALIVE)
+    					count++;
+    	
+    	return count;
     }
 }
