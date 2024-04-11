@@ -3,6 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -42,15 +44,34 @@
     </center>
     
     <bottom>
-        <VBox id="bottom-group" fx:id="bottomGroup" BorderPane.alignment="CENTER">
-            <HBox id="bottom-box-1" fx:id="bottomBox1">
+        <VBox id="bottom-box" fx:id="bottomBox" BorderPane.alignment="CENTER">
+            <HBox id="button-group" fx:id="buttonGroup">
                 <Button id="clear-button"      fx:id="clearButton"     styleClass="cancel-button" text="CLEAR" />
                 <Button id="random-button"     fx:id="randomButton"    styleClass="cancel-button" text="RANDOM" />
                 <Button id="pause-play-button" fx:id="pausePlayButton" styleClass="app-button" text="PLAY" />
                 <Button id="step-button"       fx:id="stepButton"      styleClass="app-button" text="STEP" />
             </HBox>
-            <HBox id="bottom-box-2" fx:id="bottomBox2">
-                <Text id="debug-info" fx:id="debugInfo" text="Nothing to report" />
+            
+            <HBox id="misc-controls-group" fx:id="miscControlsGroup">
+                <Label id="tps-slider-label" fx:id="tpsSliderLabel" styleClass="app-label" 
+                       text="_Ticks per second: "
+                       labelFor="${tpsSlider}"
+                       mnemonicParsing="true"
+                       />
+                
+                <Slider id="tps-slider" fx:id="tpsSlider" 
+                        min="1" 
+                        max="60" 
+                        value="30" 
+                        blockIncrement="1" 
+                        />
+                
+                <!-- value will be set in controller since we need to convert double -> int -->
+                <Label id="tps-slider-value" fx:id="tpsSliderValue" styleClass="app-label" />
+            </HBox>
+            
+            <HBox id="debug-group" fx:id="debugGroup">
+                <Text id="debug-text" fx:id="debugText" text="Nothing to report" />
             </HBox>
         </VBox>
     </bottom>
