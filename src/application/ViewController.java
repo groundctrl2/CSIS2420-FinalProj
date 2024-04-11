@@ -56,13 +56,15 @@ public class ViewController {
 
     // bottom stuff
     @FXML private VBox bottomBox;
+    @FXML private Text flavorText;
     @FXML private HBox buttonGroup;
     @FXML private Button clearButton;
     @FXML private Button randomButton;
     @FXML private Button pausePlayButton;
     @FXML private Button stepButton;
-    @FXML private HBox debugGroup;
     @FXML private Text debugText;
+    @FXML private HBox tpsSliderGroup;
+    @FXML private Label tpsSliderLabel;
     @FXML private Slider tpsSlider;
     @FXML private Label tpsSliderValue;
 
@@ -71,7 +73,7 @@ public class ViewController {
     // ==================
 
     // each cell should be square
-    private static final int CELL_INTERIOR_SIZE = 14;
+    private static final int CELL_INTERIOR_SIZE = 6;
     // each cell will have a visible border
     private static final int CELL_BORDER_WIDTH = 1;
     // complete size including border
@@ -92,6 +94,7 @@ public class ViewController {
     private boolean isPlaying;
     private long timestamp;
     private int ticksPerSecond = 2;
+    private int stepCount;
 
     /**
      * Performs post-processing of the scene graph after loading it from the FXML.
@@ -105,6 +108,9 @@ public class ViewController {
         tpsSlider.valueProperty().addListener((ov, oldValue, newValue) -> {
             ticksPerSecond = newValue.intValue();
             tpsSliderValue.setText(String.valueOf(ticksPerSecond));
+
+            if (ticksPerSecond > 30)
+                flavorText.setText("Chaos!");
         });
 
         // Set initial value for slider and its value label
@@ -147,7 +153,9 @@ public class ViewController {
        canvas.setOnMouseMoved(event -> {
            int x = (int) event.getX();
            int y = (int) event.getY();
-           debugText.setText("coordinate: (%d, %d)".formatted(x, y));
+           int c = toColIndex(x);
+           int r = toRowIndex(y);
+           debugText.setText("pos: (%d, %d), cell: [%d, %d]".formatted(x, y, r, c));
        });
 
        // Enable click-to-toggle functionality.
@@ -166,7 +174,7 @@ public class ViewController {
                 var tick = Duration.ofSeconds(1).dividedBy(ticksPerSecond);
 
                 if ((now - timestamp) > tick.toNanos()) {
-                    model.step(ViewController.this::setDisplayCell);
+                    reactToStep(model.step(ViewController.this::setDisplayCell));
                     timestamp = now;
                 }
             }
@@ -176,15 +184,17 @@ public class ViewController {
             if (isPlaying)
                 pausePlayButton.fire();
 
-            debugText.setText("You clicked the CLEAR button");
+            flavorText.setText("The slate has been wiped clean");
             model.clear();
             redrawGrid();
+            stepCount = 0;
         });
 
         randomButton.setOnAction(event -> {
-            debugText.setText("You clicked the RANDOM button");
+            flavorText.setText("Chaos!");
             model.randomize();
             redrawGrid();
+            stepCount = 0;
         });
 
         pausePlayButton.setOnAction(event -> {
@@ -192,22 +202,40 @@ public class ViewController {
                 timer.stop();
                 pausePlayButton.setText("PLAY");
                 stepButton.setDisable(false);
-                debugText.setText("You clicked the PAUSE button");
             }
             else {
                 timer.start();
                 pausePlayButton.setText("PAUSE");
                 stepButton.setDisable(true);
-                debugText.setText("You clicked the PLAY button");
             }
 
+            flavorText.setText("...");
             isPlaying = !isPlaying;
         });
 
         stepButton.setOnAction(event -> {
-            debugText.setText("You clicked the STEP button");
-            model.step(this::setDisplayCell);
+            reactToStep(model.step(this::setDisplayCell));
         });
+    }
+
+    /**
+     * Nonsense.
+     */
+    private void reactToStep(boolean change) {
+        if (change)
+            stepCount++;
+        else {
+            // Stop animating if the simulation reaches a fixed point.
+            if (isPlaying)
+                pausePlayButton.fire();
+
+            if (model.populationCount() > 0)
+                flavorText.setText("Life prevails.");
+            else
+                flavorText.setText("In the end, death claims all.");
+        }
+
+        debugText.setText("Step count: " + stepCount);
     }
 
     /* ===============================
@@ -268,6 +296,12 @@ public class ViewController {
         ncols = (int) canvasWidth / CELL_SIZE;
         nrows = (int) canvasHeight / CELL_SIZE;
         model.resize(nrows, ncols);
+
+        // reset animation variables
+        isPlaying = false;
+        timestamp = 0;
+        stepCount = 0;
+        flavorText.setText("In the beginning, there was nothing...");
 
         redrawGrid();
     }
@@ -336,6 +370,6 @@ public class ViewController {
 
         g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
 
-        debugText.setText("You clicked on cell (%d, %d)!".formatted(row, col));
+        flavorText.setText("New life spontaneously emerges!");
     }
 }

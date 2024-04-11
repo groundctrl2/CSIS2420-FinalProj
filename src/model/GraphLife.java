@@ -120,7 +120,7 @@ public class GraphLife implements ILife {
 	}
 
 	@Override
-	public void step(Callback action) {
+	public boolean step(Callback action) {
 		Queue<Cell> queue = new Queue<>();
 
 		// Calculate needed updates
@@ -146,16 +146,22 @@ public class GraphLife implements ILife {
 			}
     	}
 
+		boolean worldChanged = false;
+
     	// Make needed updates (done afterwards to prevent invalid updates)
     	while (!queue.isEmpty()) {
     		Cell cell = queue.dequeue();
 
             // Invoke callback if a new state differs from old state
-            if (cell.state() != get(cell.row(), cell.col()))
+            if (cell.state() != get(cell.row(), cell.col())) {
                 action.invoke(cell.row(), cell.col(), cell.state());
+                worldChanged = true;
+            }
 
     		set(cell.row(), cell.col(), cell.state());
     	}
+
+    	return worldChanged;
 	}
 
 	@Override
@@ -163,5 +169,16 @@ public class GraphLife implements ILife {
 		for (int current = 0; current < cells.length; current++)
 			if (cells[current] == CellState.ALIVE)
             	action.invoke(convertToRow(current), convertToCol(current), cells[current]);
+	}
+
+	@Override
+	public long populationCount() {
+	    long count = 0;
+
+	    for (var state : cells)
+	        if (state == CellState.ALIVE)
+	            count++;
+
+	    return count;
 	}
 }

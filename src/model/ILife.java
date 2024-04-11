@@ -60,8 +60,10 @@ public interface ILife {
      * @param action Used to notify the caller (i.e., the controller) that a state
      *               change occurred for a given cell in order to provide incremental
      *               updates.
+     * @return {@code true} if the world was changed at all as a result of this step,
+     *         {@code false} otherwise.
      */
-    void step(Callback action);
+    boolean step(Callback action);
 
     /**
      * Execute an action for all live cells.
@@ -69,4 +71,9 @@ public interface ILife {
      * @param action Used to provide the caller with the data for each living cell.
      */
     void forAllLife(Callback action);
+
+    /**
+     * @return the number of currently living cells.
+     */
+    long populationCount();
 }

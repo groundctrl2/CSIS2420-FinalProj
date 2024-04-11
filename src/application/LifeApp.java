@@ -34,7 +34,7 @@ public class LifeApp extends Application {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("LifeView.fxml"));
 			Parent root = loader.load();
 			Scene scene = new Scene(root, WIDTH, HEIGHT);
-			stage.setTitle("Version 0.1");
+			stage.setTitle("Version 1.0");
 			stage.setScene(scene);
 			stage.show();
 		} catch (Exception e) {

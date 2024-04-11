@@ -47,7 +47,7 @@ public class SimpleLife implements ILife {
     }
 
     @Override
-    public void step(Callback action) {
+    public boolean step(Callback action) {
     	Queue<Cell> queue = new Queue<>();
 
     	// Calculate needed updates
@@ -66,16 +66,22 @@ public class SimpleLife implements ILife {
     		}
     	}
 
+    	boolean worldChanged = false;
+
     	// Make needed updates (done afterwards to prevent invalid updates)
     	while (!queue.isEmpty()) {
     		Cell cell = queue.dequeue();
 
     		// Invoke callback if a new state differs from old state
-    		if (cell.state() != get(cell.row(), cell.col()))
+    		if (cell.state() != get(cell.row(), cell.col())) {
     		    action.invoke(cell.row(), cell.col(), cell.state());
+    		    worldChanged = true;
+    		}
 
     		set(cell.row(), cell.col(), cell.state());
     	}
+
+    	return worldChanged;
     }
 
     @Override
@@ -84,6 +90,18 @@ public class SimpleLife implements ILife {
             for (int c = 0; c < ncols; c++)
                 if (world[r][c] == CellState.ALIVE)
                 	action.invoke(r, c, world[r][c]);
+    }
+
+    @Override
+    public long populationCount() {
+        long count = 0;
+
+        for (var row : world)
+            for (var state : row)
+                if (state == CellState.ALIVE)
+                    count++;
+
+        return count;
     }
 
     /**

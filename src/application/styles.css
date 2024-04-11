@@ -18,6 +18,8 @@
     BORDER-FOCUSED: darkslateblue;
     HIGHLIGHT-PRIMARY: turquoise;
     HIGHLIGHT-DANGER: hotpink;
+    
+    -fx-font-size: 14;
 }
 
 .app-text, .big-text, .app-button, .cancel-button {
@@ -111,21 +113,24 @@
     -fx-alignment: center;    
 }
 
+#flavor-text-group {
+	-fx-padding: 10;
+}
+
+#flavor-text {
+	-fx-font-size: 12;
+}
+
 #button-group {
     -fx-spacing: 20;
-    -fx-padding: 20 10 20 10;
-}
-
-#misc-controls-group {
-	-fx-spacing: 10;
-	-fx-padding: 0 10 10 10;
-}
-
-#debug-group {
     -fx-padding: 0 10 10 10;
 }
 
+#misc-group {
+	-fx-spacing: 10;
+	-fx-padding: 0 20 10 20;
+}
+
 #debug-text {
-    -fx-font-size: 16;
     -fx-fill: lightgray;
 }
