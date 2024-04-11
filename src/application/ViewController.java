@@ -73,7 +73,7 @@ public class ViewController {
     // ==================
 
     // each cell should be square
-    private static final int CELL_INTERIOR_SIZE = 6;
+    private static final int CELL_INTERIOR_SIZE = 8;
     // each cell will have a visible border
     private static final int CELL_BORDER_WIDTH = 1;
     // complete size including border
@@ -86,7 +86,7 @@ public class ViewController {
     private int nrows;
 
     // handle for the implementation of the simulation itself
-    private ILife model = new model.GraphLife();
+    private ILife model = new model.KnightLife();
 
     // ================
     // Animation stuff
