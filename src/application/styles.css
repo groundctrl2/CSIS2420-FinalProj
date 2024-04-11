@@ -1,5 +1,9 @@
 /* Styles for the scene graph in LifeView.fxml */
 
+@font-face {
+	src: url('../resources/fonts/Bungee-Regular.ttf');
+}
+
 .root {
     /* 
      * Apparently FX doesn't (currently?) support CSS variables, but does 
@@ -7,27 +11,38 @@
      */
     BG-PRIMARY: #576F8D;
     BG-SECONDARY: white;
-    TEXT-PRIMARY: black;
+    TEXT-PRIMARY: ghostwhite;
     BIG-TEXT-PRIMARY: white;
+    BUTTON-TEXT-COLOR: black;
     BORDER-COLOR: black;
+    BORDER-FOCUSED: darkslateblue;
+    HIGHLIGHT-PRIMARY: turquoise;
+    HIGHLIGHT-DANGER: hotpink;
 }
 
-.text, .button {
-    -fx-font-family: 'Cooper Black';
-    -fx-fill: TEXT-PRIMARY;
+.app-text, .big-text, .app-button, .cancel-button {
+    -fx-font-family: 'Bungee';
     -fx-text-alignment: center;
 }
 
+.app-text {
+	-fx-fill: TEXT-PRIMARY;
+}
+    
 .big-text {
-    -fx-font-family: 'Cooper Black';
-    -fx-fill: BIG-TEXT-PRIMARY;
+	-fx-fill: BIG-TEXT-PRIMARY;
     -fx-stroke: BORDER-COLOR;
     -fx-stroke-type: outside;
     -fx-stroke-width: 5;
-    -fx-text-alignment: center;
 }
 
-.button {
+.app-label {
+	-fx-text-fill: TEXT-PRIMARY;
+	-fx-font-weight: bold;
+}
+
+.app-button, .cancel-button {
+    -fx-text-fill: BUTTON-TEXT-COLOR;
     -fx-content-display: center; 
     
     -fx-background-color: BG-SECONDARY; 
@@ -39,13 +54,32 @@
     -fx-font-size: 18;
 }
 
+.app-button:hover, .cancel-button:hover {
+	-fx-scale-x: 110%;
+	-fx-scale-y: 110%;
+}
+
+.app-button:hover {
+	-fx-background-color: HIGHLIGHT-PRIMARY;
+}
+
+.app-button:armed {
+	-fx-background-color: derive(HIGHLIGHT-PRIMARY, -20%);	
+}
+
+.cancel-button:hover {
+	-fx-background-color: HIGHLIGHT-DANGER;
+}
+
+.cancel-button:armed {
+	-fx-background-color: derive(HIGHLIGHT-DANGER, -20%);	
+}
+
+.app-button:focused, .cancel-button:focused {
+	-fx-border-color: BORDER-FOCUSED;
+}
+
 #app-container {
-    -fx-max-width: infinity; 
-    -fx-max-height: infinity; 
-    
-    -fx-pref-width: 800;
-    -fx-pref-height: 600; 
-    
     -fx-background-color: BG-PRIMARY; 
     -fx-background-insets: 8; 
     
@@ -55,14 +89,12 @@
 }
 
 #top-box {
-    -fx-pref-width: 200; 
-    -fx-pref-height: 100; 
-    
     -fx-alignment: center;
+    -fx-padding: 10;
 }
 
 #title-text {
-     -fx-font-size: 36;
+     -fx-font-size: 48;
 }
 
 #center-pane {
@@ -75,22 +107,25 @@
     -fx-background-color: lightgray;
 }
 
-#bottom-group * {
+#bottom-box * {
     -fx-alignment: center;    
 }
 
-#bottom-box-1 {
-    -fx-pref-width: 200; 
-    -fx-pref-height: 100; 
+#button-group {
     -fx-spacing: 20;
-    -fx-padding: 10;
+    -fx-padding: 20 10 20 10;
 }
 
-#bottom-box-2 {
+#misc-controls-group {
+	-fx-spacing: 10;
+	-fx-padding: 0 10 10 10;
+}
+
+#debug-group {
     -fx-padding: 0 10 10 10;
 }
 
-#debug-info {
+#debug-text {
     -fx-font-size: 16;
-    -fx-fill: ghostwhite;
+    -fx-fill: lightgray;
 }

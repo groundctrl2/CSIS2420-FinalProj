@@ -1,9 +1,13 @@
 package application;
 
+import java.time.Duration;
+
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -18,27 +22,28 @@ import model.SimpleLife;
 
 public class ViewController {
     // overall layout
-    @FXML BorderPane appContainer;
+    @FXML private BorderPane appContainer;
 
     // top stuff
-    @FXML HBox topBox;
-    @FXML Text titleText;
+    @FXML private HBox topBox;
+    @FXML private Text titleText;
 
     // center stuff
-    @FXML AnchorPane centerPane;
-    @FXML Pane canvasHolder;
-    @FXML Canvas canvas;
+    @FXML private AnchorPane centerPane;
+    @FXML private Pane canvasHolder;
+    @FXML private Canvas canvas;
 
     // bottom stuff
-    @FXML VBox bottomGroup;
-    @FXML HBox bottomBox1;
-    @FXML Button clearButton;
-    @FXML Button randomButton;
-    @FXML Button pauseButton;
-    @FXML Button playButton;
-    @FXML Button stepButton;
-    @FXML HBox bottomBox2;
-    @FXML Text debugInfo;
+    @FXML private VBox bottomBox;
+    @FXML private HBox buttonGroup;
+    @FXML private Button clearButton;
+    @FXML private Button randomButton;
+    @FXML private Button pausePlayButton;
+    @FXML private Button stepButton;
+    @FXML private HBox debugGroup;
+    @FXML private Text debugText;
+    @FXML private Slider tpsSlider;
+    @FXML private Label tpsSliderValue;
 
     // Grid/Canvas stuff.
     private static final int CELL_INTERIOR_SIZE = 14;
@@ -58,10 +63,20 @@ public class ViewController {
     // animation stuff
     private boolean isPlaying;
     private long timestamp;
+    private int ticksPerSecond = 30;
 
     public void initialize() {
         adjustCanvasDimensionsForBorderJank();
         initButtonHandlers();
+
+        // Update tps and slider value label when slider changes value
+        tpsSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            ticksPerSecond = newValue.intValue();
+            tpsSliderValue.setText(String.valueOf(ticksPerSecond));
+        });
+
+        // Set initial value for value label
+        tpsSliderValue.setText(String.valueOf(ticksPerSecond));
     }
 
     private void adjustCanvasDimensionsForBorderJank() {
@@ -72,7 +87,7 @@ public class ViewController {
         then bind the canvas dimensions to the inner pane.
 
         This should perfectly align the canvas inside the anchor pane
-        so that (0, 0) through (canvas canvasWidth, canvas canvasHeight) is
+        so that (0, 0) through (canvas width, canvas height) is
         immediately inside the borders.
 
         There's probably a better way to accomplish this,
@@ -88,34 +103,26 @@ public class ViewController {
        canvas.heightProperty().bind(canvasHolder.heightProperty());
 
        // clear and redraw on resizes
-       canvas.widthProperty().addListener(observable -> resizeGrid());
-       canvas.heightProperty().addListener(observable -> resizeGrid());
+       canvas.widthProperty().addListener((ov, oldValue, newValue) -> resizeGrid());
+       canvas.heightProperty().addListener((ov, oldValue, newValue) -> resizeGrid());
 
        canvas.setOnMouseMoved(event -> {
            int x = (int) event.getX();
            int y = (int) event.getY();
-           debugInfo.setText("coordinate: (%d, %d)".formatted(x, y));
+           debugText.setText("coordinate: (%d, %d)".formatted(x, y));
        });
 
        canvas.setOnMouseClicked(this::handleCanvasMouseClick);
     }
 
     private void initButtonHandlers() {
-        ILife.Callback stepCallback = (row, col, state) -> {
-            var g = canvas.getGraphicsContext2D();
-            double x0 = toXCoord(col);
-            double y0 = toYCoord(row);
-            g.setFill(state == CellState.ALIVE ? Color.BLACK : Color.WHITE);
-            g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
-        };
-
         var timer = new AnimationTimer() {
             @Override
             public void handle(long now){
-                final long halfSecondInNanos = 1_000_000_000 / 2;
-                // Fastest I was able to get it to run was 34x/sec (halfSecondInNanos / 17)
-                if ((now - timestamp) > halfSecondInNanos) {
-                    model.step(stepCallback);
+                var tick = Duration.ofSeconds(1).dividedBy(ticksPerSecond);
+
+                if ((now - timestamp) > tick.toNanos()) {
+                    model.step(ViewController.this::setDisplayCell);
                     drawGrid();
                     timestamp = now;
                 }
@@ -123,37 +130,41 @@ public class ViewController {
         };
 
         clearButton.setOnAction(event -> {
-            debugInfo.setText("You clicked the CLEAR button");
-            pauseButton.fire();
+            if (isPlaying)
+                pausePlayButton.fire();
+
+            debugText.setText("You clicked the CLEAR button");
             model.clear();
             drawGrid();
         });
 
         randomButton.setOnAction(event -> {
-            debugInfo.setText("You clicked the RANDOM button");
+            debugText.setText("You clicked the RANDOM button");
             model.randomize();
             drawGrid();
         });
 
-        pauseButton.setOnAction(event -> {
-            debugInfo.setText("You clicked the PAUSE button");
-            timer.stop();
-            isPlaying = false;
-        });
+        pausePlayButton.setOnAction(event -> {
+            if (isPlaying) {
+                timer.stop();
+                pausePlayButton.setText("PLAY");
+                stepButton.setDisable(false);
+                debugText.setText("You clicked the PAUSE button");
+            }
+            else {
+                timer.start();
+                pausePlayButton.setText("PAUSE");
+                stepButton.setDisable(true);
+                debugText.setText("You clicked the PLAY button");
+            }
 
-        playButton.setOnAction(event -> {
-            debugInfo.setText("You clicked the PLAY button");
-            timer.start();
-            isPlaying = true;
+            isPlaying = !isPlaying;
         });
 
         stepButton.setOnAction(event -> {
-            debugInfo.setText("You clicked the CLEAR button");
-
-            if (!isPlaying) {
-                model.step(stepCallback);
-                drawGrid();
-            }
+            debugText.setText("You clicked the STEP button");
+            model.step(this::setDisplayCell);
+            drawGrid();
         });
     }
 
@@ -179,7 +190,16 @@ public class ViewController {
         return (CELL_BORDER_WIDTH / 2) + col*CELL_SIZE;
     }
 
-    void resizeGrid() {
+    /** Callback for model#step */
+    private void setDisplayCell(int row, int col, CellState state) {
+        var g = canvas.getGraphicsContext2D();
+        double x0 = toXCoord(col);
+        double y0 = toYCoord(row);
+        g.setFill(state == CellState.ALIVE ? Color.BLACK : Color.WHITE);
+        g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
+    };
+
+    private void resizeGrid() {
         canvasWidth = canvas.getWidth();
         canvasHeight = canvas.getHeight();
         ncols = (int) canvasWidth / CELL_SIZE;
@@ -189,7 +209,7 @@ public class ViewController {
         drawGrid();
     }
 
-    void drawGrid() {
+    private void drawGrid() {
         var g = canvas.getGraphicsContext2D();
         g.setFill(Color.WHITE);
         g.fillRect(0, 0, canvasWidth, canvasHeight);
@@ -214,7 +234,7 @@ public class ViewController {
         });
     }
 
-    void handleCanvasMouseClick(MouseEvent event) {
+    private void handleCanvasMouseClick(MouseEvent event) {
         var g = canvas.getGraphicsContext2D();
 
         double x = event.getX();
@@ -238,6 +258,6 @@ public class ViewController {
 
         g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
 
-        debugInfo.setText("You clicked on cell (%d, %d)!".formatted(row, col));
+        debugText.setText("You clicked on cell (%d, %d)!".formatted(row, col));
     }
 }
