@@ -148,11 +148,13 @@ public class ViewController {
             if (isPlaying) {
                 timer.stop();
                 pausePlayButton.setText("PLAY");
+                stepButton.setDisable(false);
                 debugText.setText("You clicked the PAUSE button");
             }
             else {
                 timer.start();
                 pausePlayButton.setText("PAUSE");
+                stepButton.setDisable(true);
                 debugText.setText("You clicked the PLAY button");
             }
 
@@ -161,11 +163,8 @@ public class ViewController {
 
         stepButton.setOnAction(event -> {
             debugText.setText("You clicked the STEP button");
-
-            if (!isPlaying) {
-                model.step(this::setDisplayCell);
-                drawGrid();
-            }
+            model.step(this::setDisplayCell);
+            drawGrid();
         });
     }
 
