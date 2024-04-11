@@ -1,7 +1,6 @@
 package model;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 import edu.princeton.cs.algs4.Queue;
@@ -51,12 +50,6 @@ public class SimpleLife implements ILife {
     }
 
     @Override
-    public void seed(List<Cell> seed) {
-        for (var cell : seed)
-            this.set(cell.row(), cell.col(), cell.state());
-    }
-
-    @Override
     public void step(Callback action) {
     	Queue<Cell> queue = new Queue<>();
     	
@@ -93,12 +86,10 @@ public class SimpleLife implements ILife {
     
     /**
      * Returns count how many of 8 neighbors alive (wraps around).
-     * @TODO replace with adjacency list alive count. 
      * 
      * @return int count of alive neighbors surrounding cell
      */
-    @Override
-    public int countNeighbors(int row, int col) {
+    private int countNeighbors(int row, int col) {
     	int count = 0;
     	int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows};
         int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};

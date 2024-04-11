@@ -1,7 +1,5 @@
 package model;
 
-import java.util.List;
-
 /**
  * Contract for algorithms that implement Life-like cellular automata.
  */
@@ -41,11 +39,6 @@ public interface ILife {
     void set(int row, int col, CellState state);
 
     /**
-     * Set the initial state of the world
-     */
-    void seed(List<Cell> seed);
-
-    /**
      * Advance the world by one tick.
      */
     void step(Callback action);
@@ -54,9 +47,4 @@ public interface ILife {
      * Execute an action for all live cells.
      */
     void forAllLife(Callback action);
-    
-    /**
-     * @return int count of neighbors surrounding cell.
-     */
-    public int countNeighbors(int row, int col);
 }
