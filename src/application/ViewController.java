@@ -18,10 +18,31 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import model.CellState;
 import model.ILife;
-import model.SimpleLife;
 
+/**
+ * Controller for the scene graph defined in <a href="LifeView.fxml">LifeView.fxml</a>.
+ * <p>
+ * This class manages the interaction and facilitates communication between the
+ * model (classes that run the simulation behind the scenes) and the view (the
+ * visual display and UI components).
+ */
 public class ViewController {
-    // overall layout
+    /*
+     * For convenience, we make a handle to each major component in the scene graph,
+     * even though we might currently use some of them directly.
+     *
+     * Each @FXML annotated variable is injected from the FXML file by the
+     * FXMLLoader using the 'fx:id' attributes of each element as the name for the
+     * target instance variable.
+     *
+     * Once the FXML is loaded and the variables are injected, the initialize()
+     * method is called for post-processing, so start there to follow the
+     * program behavior.
+     */
+
+    // ==================
+    // Component handles
+    // ==================
     @FXML private BorderPane appContainer;
 
     // top stuff
@@ -45,12 +66,16 @@ public class ViewController {
     @FXML private Slider tpsSlider;
     @FXML private Label tpsSliderValue;
 
-    // Grid/Canvas stuff.
+    // ==================
+    // Grid/Canvas stuff
+    // ==================
+
+    // each cell should be square
     private static final int CELL_INTERIOR_SIZE = 14;
-    // Half the border belongs to one cell, and the other half to neigbor.
-    private static final int CELL_BORDER_WIDTH = 2; // preferably a multiple of 2
-    // Size including border is: interior + 2*(border / 2)
-    private static final int CELL_SIZE = CELL_INTERIOR_SIZE + CELL_BORDER_WIDTH;
+    // each cell will have a visible border
+    private static final int CELL_BORDER_WIDTH = 1;
+    // complete size including border
+    private static final int CELL_SIZE = CELL_INTERIOR_SIZE + 2*CELL_BORDER_WIDTH;
 
     private double canvasWidth;
     private double canvasHeight;
@@ -58,19 +83,26 @@ public class ViewController {
     private int ncols;
     private int nrows;
 
-    private ILife model = new SimpleLife();
+    // handle for the implementation of the simulation itself
+    private ILife model = new model.GraphLife();
 
-    // animation stuff
+    // ================
+    // Animation stuff
+    // ================
     private boolean isPlaying;
     private long timestamp;
-    private int ticksPerSecond = 30;
+    private int ticksPerSecond = 2;
 
+    /**
+     * Performs post-processing of the scene graph after loading it from the FXML.
+     * In general, this mostly just adds event handlers for various components.
+     */
     public void initialize() {
         adjustCanvasDimensionsForBorderJank();
         initButtonHandlers();
 
         // Update tps and slider value label when slider changes value
-        tpsSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+        tpsSlider.valueProperty().addListener((ov, oldValue, newValue) -> {
             ticksPerSecond = newValue.intValue();
             tpsSliderValue.setText(String.valueOf(ticksPerSecond));
         });
@@ -79,19 +111,21 @@ public class ViewController {
         tpsSliderValue.setText(String.valueOf(ticksPerSecond));
     }
 
+    /**
+     * Initializes the canvas.
+     */
     private void adjustCanvasDimensionsForBorderJank() {
-        /*
-        See the FXML comments above the declaration of the centerPane.
-
-        We first anchor the inner pane to the outer pane's insets,
-        then bind the canvas dimensions to the inner pane.
-
-        This should perfectly align the canvas inside the anchor pane
-        so that (0, 0) through (canvas width, canvas height) is
-        immediately inside the borders.
-
-        There's probably a better way to accomplish this,
-        but this works, so ¯\_(ツ)_/¯
+       /*
+        * See the FXML comments above the declaration of the centerPane.
+        *
+        * We first anchor the inner pane to the outer pane's insets, then bind the
+        * canvas dimensions to the inner pane.
+        *
+        * This should perfectly align the canvas inside the anchor pane so that (0, 0)
+        * through (canvas width, canvas height) is immediately inside the borders.
+        *
+        * There's probably a better way to accomplish this, but this works, so
+        * ¯\_(ツ)_/¯
         */
        var insets = centerPane.getInsets();
        AnchorPane.setTopAnchor(canvasHolder, insets.getTop());
@@ -99,23 +133,32 @@ public class ViewController {
        AnchorPane.setBottomAnchor(canvasHolder, insets.getBottom());
        AnchorPane.setLeftAnchor(canvasHolder, insets.getLeft());
 
+       // Bind the canvas dimensions to its parent component, so that it
+       // ultimately resizes when the window resizes.
        canvas.widthProperty().bind(canvasHolder.widthProperty());
        canvas.heightProperty().bind(canvasHolder.heightProperty());
 
-       // clear and redraw on resizes
+       // Clear and redraw whenever the canvas viewport is resized.
        canvas.widthProperty().addListener((ov, oldValue, newValue) -> resizeGrid());
        canvas.heightProperty().addListener((ov, oldValue, newValue) -> resizeGrid());
 
+       // For debugging. TODO: delete this
        canvas.setOnMouseMoved(event -> {
            int x = (int) event.getX();
            int y = (int) event.getY();
            debugText.setText("coordinate: (%d, %d)".formatted(x, y));
        });
 
-       canvas.setOnMouseClicked(this::handleCanvasMouseClick);
+       // Enable click-to-toggle functionality.
+       canvas.setOnMouseClicked(this::toggleDisplayCell);
     }
 
+    /**
+     * Sets the actions for the main buttons.
+     */
     private void initButtonHandlers() {
+        // The timer just calls the model's step() function to advance the
+        // simulation by one step on each tick.
         var timer = new AnimationTimer() {
             @Override
             public void handle(long now){
@@ -123,7 +166,7 @@ public class ViewController {
 
                 if ((now - timestamp) > tick.toNanos()) {
                     model.step(ViewController.this::setDisplayCell);
-                    drawGrid();
+                    redrawGrid();
                     timestamp = now;
                 }
             }
@@ -135,13 +178,13 @@ public class ViewController {
 
             debugText.setText("You clicked the CLEAR button");
             model.clear();
-            drawGrid();
+            redrawGrid();
         });
 
         randomButton.setOnAction(event -> {
             debugText.setText("You clicked the RANDOM button");
             model.randomize();
-            drawGrid();
+            redrawGrid();
         });
 
         pausePlayButton.setOnAction(event -> {
@@ -164,9 +207,17 @@ public class ViewController {
         stepButton.setOnAction(event -> {
             debugText.setText("You clicked the STEP button");
             model.step(this::setDisplayCell);
-            drawGrid();
+            redrawGrid();
         });
     }
+
+    /* ===============================
+     * Canvas/Grid drawing functions.
+     * ===============================
+     *
+     * TODO: move grid data and functions into a separate class so that we can
+     * switch grid types (rectangular <-> hex).
+     */
 
     /** Convert from y-coordinate to row index, rounding down */
     private int toRowIndex(double y) {
@@ -190,7 +241,16 @@ public class ViewController {
         return (CELL_BORDER_WIDTH / 2) + col*CELL_SIZE;
     }
 
-    /** Callback for model#step */
+    /**
+     * Callback for {@link model.ILife#step}.
+     * <p>
+     * This is passed (as a lambda) to the model so that it can notify the
+     * controller whenever a cell changes state, allowing the canvas/grid to be
+     * incrementally updated.
+     * <p>
+     * In theory, this should be more efficient than redrawing the whole grid on
+     * each step, but with GPUs and buffering and caches, maybe not.
+     */
     private void setDisplayCell(int row, int col, CellState state) {
         var g = canvas.getGraphicsContext2D();
         double x0 = toXCoord(col);
@@ -199,6 +259,10 @@ public class ViewController {
         g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
     };
 
+    /**
+     * Resizes the grid. Currently, this also clears the grid, but it technically
+     * doesn't have to.
+     */
     private void resizeGrid() {
         canvasWidth = canvas.getWidth();
         canvasHeight = canvas.getHeight();
@@ -206,25 +270,35 @@ public class ViewController {
         nrows = (int) canvasHeight / CELL_SIZE;
         model.resize(nrows, ncols);
 
-        drawGrid();
+        redrawGrid();
     }
 
-    private void drawGrid() {
+    /**
+     * Redraws the whole grid by querying the model for the state of each
+     * living cell.
+     */
+    private void redrawGrid() {
         var g = canvas.getGraphicsContext2D();
+        /*
+         * We could render each cell by using fillRect() followed by strokeRect() for
+         * the cell borders. Alternatively, we can draw all the borders as grid lines
+         * over the whole canvas, and then fill in the cell interiors. We currently,
+         * take the second approach below.
+         */
         g.setFill(Color.WHITE);
         g.fillRect(0, 0, canvasWidth, canvasHeight);
         g.setStroke(Color.LIGHTGRAY);
-        g.setLineWidth(CELL_BORDER_WIDTH);
+        g.setLineWidth(2*CELL_BORDER_WIDTH);
 
-        // draw verticals
+        // Draw vertical grid lines
         for (int x = 0; x < canvasWidth; x += CELL_SIZE)
             g.strokeLine(x, 0, x, canvasHeight);
 
-        // draw horizontals
+        // Draw horizontal grid lines
         for (int y = 0; y < canvasHeight; y += CELL_SIZE)
             g.strokeLine(0, y, canvasWidth, y);
 
-        // fill in cells which are alive according to the model
+        // Fill in cells which are alive according to the model
         g.setFill(Color.BLACK);
 
         model.forAllLife((row, col, state) -> {
@@ -234,16 +308,21 @@ public class ViewController {
         });
     }
 
-    private void handleCanvasMouseClick(MouseEvent event) {
+    /**
+     * Toggles the state of the cell that was clicked on.
+     */
+    private void toggleDisplayCell(MouseEvent event) {
         var g = canvas.getGraphicsContext2D();
 
+        // Actual mouse click coordinates
         double x = event.getX();
         double y = event.getY();
 
+        // Corresponding grid index
         int row = toRowIndex(y);
         int col = toColIndex(x);
 
-        // top-left coordinates cell
+        // Top-left coordinates of the cell
         double x0 = toXCoord(col);
         double y0 = toYCoord(row);
 

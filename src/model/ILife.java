@@ -6,13 +6,11 @@ package model;
 public interface ILife {
     /**
      * A convenience class for holding multiple return values / parameters.
-     *
-     * @see ILife#seed
      */
-    public record Cell(int row, int col, CellState state) {}
+    record Cell(int row, int col, CellState state) {}
 
     @FunctionalInterface
-    public interface Callback {
+    interface Callback {
         void invoke(int row, int col, CellState state);
     }
 
