@@ -107,7 +107,8 @@ public class ViewController {
             tpsSliderValue.setText(String.valueOf(ticksPerSecond));
         });
 
-        // Set initial value for value label
+        // Set initial value for slider and its value label
+        tpsSlider.setValue(ticksPerSecond);
         tpsSliderValue.setText(String.valueOf(ticksPerSecond));
     }
 
@@ -166,7 +167,6 @@ public class ViewController {
 
                 if ((now - timestamp) > tick.toNanos()) {
                     model.step(ViewController.this::setDisplayCell);
-                    redrawGrid();
                     timestamp = now;
                 }
             }
@@ -207,7 +207,6 @@ public class ViewController {
         stepButton.setOnAction(event -> {
             debugText.setText("You clicked the STEP button");
             model.step(this::setDisplayCell);
-            redrawGrid();
         });
     }
 
@@ -233,12 +232,12 @@ public class ViewController {
 
     /** Convert from row index to y-coordinate of the top-left of cell interior */
     private double toYCoord(int row) {
-        return (CELL_BORDER_WIDTH / 2) + row*CELL_SIZE;
+        return CELL_BORDER_WIDTH + row*CELL_SIZE;
     }
 
     /** Convert from column index to x-coordinate of the top-left of cell interior */
     private double toXCoord(int col) {
-        return (CELL_BORDER_WIDTH / 2) + col*CELL_SIZE;
+        return CELL_BORDER_WIDTH + col*CELL_SIZE;
     }
 
     /**

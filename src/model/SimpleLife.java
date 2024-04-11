@@ -1,19 +1,16 @@
 package model;
 
 import java.util.Arrays;
-import java.util.Random;
 
 import edu.princeton.cs.algs4.Queue;
 
 /**
- * A basic implementation of Conway's Game of Life.
+ * A basic implementation of Conway's Game of Life with the classic B3/S23 rules.
  */
 public class SimpleLife implements ILife {
-    private CellState[][] world = new CellState[0][];
+    private CellState[][] world;  // will be instantiated whenever resize() is called
     private int nrows;
     private int ncols;
-
-    private static final Random random = new Random();
 
     @Override
     public void resize(int nrows, int ncols) {
@@ -33,7 +30,7 @@ public class SimpleLife implements ILife {
     public void randomize() {
         for (int r = 0; r < nrows; r++)
             for (int c = 0; c < ncols; c++)
-                if (random.nextBoolean())
+                if (RANDOM.nextBoolean())
                     world[r][c] = CellState.ALIVE;
                 else
                     world[r][c] = CellState.DEAD;
@@ -52,12 +49,12 @@ public class SimpleLife implements ILife {
     @Override
     public void step(Callback action) {
     	Queue<Cell> queue = new Queue<>();
-    	
+
     	// Calculate needed updates
     	for (int r = 0; r < nrows; r++) {
     		for (int c = 0; c < ncols; c++) {
     			int aliveNeighbors = countNeighbors(r, c);
-    			
+
     			if (get(r, c) == CellState.ALIVE) {
     				if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if between 2-3 neighbors.
     					queue.enqueue(new Cell(r, c, CellState.DEAD));
@@ -66,12 +63,17 @@ public class SimpleLife implements ILife {
     				if (aliveNeighbors == 3) // Dead cell with 3 neighbors becomes alive.
     					queue.enqueue(new Cell(r, c, CellState.ALIVE));
     			}
-    		}	
+    		}
     	}
-    	
+
     	// Make needed updates (done afterwards to prevent invalid updates)
     	while (!queue.isEmpty()) {
     		Cell cell = queue.dequeue();
+
+    		// Invoke callback if a new state differs from old state
+    		if (cell.state() != get(cell.row(), cell.col()))
+    		    action.invoke(cell.row(), cell.col(), cell.state());
+
     		set(cell.row(), cell.col(), cell.state());
     	}
     }
@@ -83,23 +85,32 @@ public class SimpleLife implements ILife {
                 if (world[r][c] == CellState.ALIVE)
                 	action.invoke(r, c, world[r][c]);
     }
-    
+
     /**
      * Returns count how many of 8 neighbors alive (wraps around).
-     * 
+     *
      * @return int count of alive neighbors surrounding cell
      */
     private int countNeighbors(int row, int col) {
     	int count = 0;
+        /*
+         * The +M factor before reducing (mod M) accounts for the fact that Java's (%)
+         * operator uses truncated division as opposed to floor division--the latter
+         * being more convenient for cyclic array-indexing.
+         *
+         * As an example, -1 % 5 == -1 in Java instead of 4.
+         *
+         * See: https://en.wikipedia.org/wiki/Modulo#In_programming_languages
+         */
     	int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows};
         int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};
-    	
+
     	for (int r : rowOffsets)
     		for (int c : colOffsets)
     			if (r != row || c != col) // Disclude current cell
     				if (get(r, c) == CellState.ALIVE)
     					count++;
-    	
+
     	return count;
     }
 }
