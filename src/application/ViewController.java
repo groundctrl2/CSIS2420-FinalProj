@@ -73,7 +73,7 @@ public class ViewController {
     // ==================
 
     // each cell should be square
-    private static final int CELL_INTERIOR_SIZE = 8;
+    private static final int CELL_INTERIOR_SIZE = 10;
     // each cell will have a visible border
     private static final int CELL_BORDER_WIDTH = 1;
     // complete size including border
@@ -86,7 +86,7 @@ public class ViewController {
     private int nrows;
 
     // handle for the implementation of the simulation itself
-    private ILife model = new model.KnightLife();
+    private ILife model = new model.SparseLife();
 
     // ================
     // Animation stuff
@@ -95,6 +95,7 @@ public class ViewController {
     private long timestamp;
     private int ticksPerSecond = 2;
     private int stepCount;
+    private boolean restart;
 
     /**
      * Performs post-processing of the scene graph after loading it from the FXML.
@@ -109,7 +110,7 @@ public class ViewController {
             ticksPerSecond = newValue.intValue();
             tpsSliderValue.setText(String.valueOf(ticksPerSecond));
 
-            if (ticksPerSecond > 30)
+            if (isPlaying && ticksPerSecond > 30)
                 flavorText.setText("Chaos!");
         });
 
@@ -151,6 +152,11 @@ public class ViewController {
 
        // For debugging. TODO: delete this
        canvas.setOnMouseMoved(event -> {
+           // Displaying step count takes precedence over the mouse position
+           // during simulation or at the end of a simulation that stalls.
+           if (isPlaying || restart)
+               return;
+
            int x = (int) event.getX();
            int y = (int) event.getY();
            int c = toColIndex(x);
@@ -188,6 +194,7 @@ public class ViewController {
             model.clear();
             redrawGrid();
             stepCount = 0;
+            restart = false;
         });
 
         randomButton.setOnAction(event -> {
@@ -195,6 +202,7 @@ public class ViewController {
             model.randomize();
             redrawGrid();
             stepCount = 0;
+            restart = false;
         });
 
         pausePlayButton.setOnAction(event -> {
@@ -222,10 +230,16 @@ public class ViewController {
      * Nonsense.
      */
     private void reactToStep(boolean change) {
+        if (restart) {
+            stepCount = 0;
+            restart = false;
+            flavorText.setText("Another round.");
+        }
+
         if (change)
             stepCount++;
         else {
-            // Stop animating if the simulation reaches a fixed point.
+            // Stop animating if the simulation stalls (reaches a fixed point).
             if (isPlaying)
                 pausePlayButton.fire();
 
@@ -233,7 +247,12 @@ public class ViewController {
                 flavorText.setText("Life prevails.");
             else
                 flavorText.setText("In the end, death claims all.");
+
+            // Reset the step count next time.
+            restart = true;
         }
+
+        // TODO: detect cycles and react accordingly
 
         debugText.setText("Step count: " + stepCount);
     }

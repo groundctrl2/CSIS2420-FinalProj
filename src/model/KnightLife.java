@@ -1,7 +1,6 @@
 package model;
 
 import java.util.Arrays;
-import java.util.Random;
 
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
@@ -11,8 +10,6 @@ public class KnightLife implements ILife {
 	private CellState[] cells; // row-col indexed
 	private int nrows;
 	private int ncols;
-
-	private static final Random random = new Random();
 
 	@Override
 	public void resize(int nrows, int ncols) {
@@ -107,7 +104,7 @@ public class KnightLife implements ILife {
 	@Override
 	public void randomize() {
 		for (int current = 0; current < cells.length; current++)
-			if (random.nextBoolean())
+			if (RANDOM.nextBoolean())
 				cells[current] = CellState.ALIVE;
 			else
 				cells[current] = CellState.DEAD;
