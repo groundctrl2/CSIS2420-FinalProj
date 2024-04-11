@@ -30,7 +30,7 @@ public class KnightLife implements ILife {
 
 	/**
 	 * Returns index of cell based on row and col
-	 * 
+	 *
 	 * @param row
 	 * @param col
 	 * @return int cell index
@@ -41,17 +41,17 @@ public class KnightLife implements ILife {
 
 	/**
 	 * Returns cell's row based on index
-	 * 
+	 *
 	 * @param index
 	 * @return int cell's row
 	 */
 	private int convertToRow(int index) {
-		return (int) index / ncols;
+		return index / ncols;
 	}
 
 	/**
 	 * Returns cell's col based on index
-	 * 
+	 *
 	 * @param index
 	 * @return int cell's col
 	 */
@@ -61,7 +61,7 @@ public class KnightLife implements ILife {
 
 	/**
 	 * Adds neighbor edges to given cell.
-	 * 
+	 *
 	 * @param index
 	 */
 	private void initializeNeighbors(int index) {
@@ -87,7 +87,7 @@ public class KnightLife implements ILife {
 
 	/**
 	 * Checks if vertex already linked to neighbor.
-	 * 
+	 *
 	 * @param index
 	 * @param neighbor
 	 * @return boolean true/false linked to neighbor
@@ -124,7 +124,7 @@ public class KnightLife implements ILife {
 	}
 
 	@Override
-	public void step(Callback action) {
+	public boolean step(Callback action) {
 		Queue<Cell> queue = new Queue<>();
 
 		// Calculate needed updates
@@ -149,11 +149,22 @@ public class KnightLife implements ILife {
 			}
 		}
 
+		boolean worldChanged = false;
+
 		// Make needed updates (done afterwards to prevent invalid updates)
 		while (!queue.isEmpty()) {
 			Cell cell = queue.dequeue();
+
+			// Invoke callback if a new state differs from old state
+            if (cell.state() != get(cell.row(), cell.col())) {
+                action.invoke(cell.row(), cell.col(), cell.state());
+                worldChanged = true;
+            }
+
 			set(cell.row(), cell.col(), cell.state());
 		}
+
+		return worldChanged;
 	}
 
 	@Override
@@ -162,4 +173,15 @@ public class KnightLife implements ILife {
 			if (cells[current] == CellState.ALIVE)
 				action.invoke(convertToRow(current), convertToCol(current), cells[current]);
 	}
+
+	@Override
+	public long populationCount() {
+       long count = 0;
+
+        for (var state : cells)
+            if (state == CellState.ALIVE)
+                count++;
+
+        return count;
+    }
 }
