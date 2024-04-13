@@ -1,15 +1,18 @@
 package application;
 
 import java.time.Duration;
+import java.util.HashMap;
 
 import javafx.animation.AnimationTimer;
+import javafx.beans.property.Property;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -18,6 +21,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import model.CellState;
 import model.ILife;
@@ -70,7 +75,7 @@ public class ViewController {
 	@FXML private Label tpsSliderLabel;
 	@FXML private Slider tpsSlider;
 	@FXML private Label tpsSliderValue;
-	@FXML private ComboBox<Class<? extends ILife>> modelCBox;
+	@FXML private ComboBox<String> modelCBox;
 
 	// ==================
 	// Grid/Canvas stuff
@@ -128,47 +133,28 @@ public class ViewController {
 	}
 
 	private void initModelSelectorBox() {
-		/*
-		 * To customize the display of non-string items in the combo box,
-		 * we need to set the cell factory AND the button cell. For this,
-		 * we have to define a subclass of ListCell and override the
-		 * updateItem() method.
-		 */
-		class CustomCBoxCell extends ListCell<Class<? extends ILife>> {
-			@Override
-			public void updateItem(Class<? extends ILife> cls, boolean empty) {
-				super.updateItem(cls, empty);
+		var items = modelCBox.getItems();
+		var lookupTable = new HashMap<String, Class<? extends ILife>>();
 
-				if (empty || cls == null) {
-					setText(null);
-					setGraphic(null);
-				}
-				else {
-					// >>> This is only relevant line in this class <<<
-					// Use the short name of the class rather than full name.
-					setText(cls.getSimpleName());
-				}
-			}
+		/*
+		 * Add the name of each concrete model class to the combo box,
+		 * and link the the name to the actual class object in a map.
+		 */
+		for (var cls : ILife.implementations()) {
+			String key = cls.getSimpleName();
+			items.add(key);
+			lookupTable.put(key, cls);
 		}
 
-		modelCBox.setCellFactory(listView -> new CustomCBoxCell());
-		modelCBox.setButtonCell(new CustomCBoxCell());
-
-		// Add implementation classes to the drop-down list
-		var items = modelCBox.getItems();
-		items.add(model.SimpleLife.class);
-		items.add(model.GraphLife.class);
-		items.add(model.KnightLife.class);
-		items.add(model.ZombieLife.class);
-		items.add(model.VampireLife.class);
-		items.add(model.SparseLife.class);
-
 		// Set the current value to the current model's class.
-		modelCBox.setValue(model.getClass());
+		String currentSelection = model.getClass().getSimpleName();
+		assert lookupTable.containsKey(currentSelection): currentSelection;
+		modelCBox.setValue(currentSelection);
 
 		// Update the model whenever the combo box value changes.
 		modelCBox.setOnAction(event -> {
-			var selectedClass = modelCBox.getValue();
+			var className = modelCBox.getValue();
+			var selectedClass = lookupTable.get(className);
 
 			if (selectedClass.equals(model.getClass())) {
 				debugText.setText("No change");
@@ -309,18 +295,51 @@ public class ViewController {
 			if (isPlaying)
 				pausePlayButton.fire();
 
-			if (model.populationCount() > 0)
-				flavorText.setText("Life prevails.");
-			else
-				flavorText.setText("In the end, death claims all.");
-
 			// Reset the step count next time.
 			restart = true;
+
+			if (stepCount > 0) {
+				if (model.populationCount() > 0) {
+					flavorText.setText("Life prevails.");
+
+					if (model instanceof model.VampireLife)
+						temporarilySetFill(flavorText, Color.DARKRED, flavorText.textProperty());
+				}
+				else {
+					flavorText.setText("In the end, death claims all.");
+				}
+			}
 		}
 
 		// TODO: detect cycles and react accordingly
 
 		debugText.setText("Step count: " + stepCount);
+	}
+
+	/**
+	 * Temporarily changes the color of a component.
+	 *
+	 * @param shape the colorable component
+	 * @param fill the temporary color
+	 * @param property the property whose change of value should cause the
+	 *                 old color to be restored.
+	 * @param <T> the type of the value wrapped by {@code property}
+	 */
+	private <T> void temporarilySetFill(Shape shape, Paint fill, Property<T> property) {
+		var savedFill = shape.getFill();
+		shape.setFill(fill);
+
+		/*
+		 * Add a one-shot change listener that restores the old fill. An anonymous class
+		 * is used instead of lambda so that we can self-reference the listener.
+		 */
+		property.addListener(new ChangeListener<T>() {
+			@Override
+			public void changed(ObservableValue<? extends T> observable, T oldValue, T newValue) {
+				shape.setFill(savedFill);
+				property.removeListener(this);
+			}
+		});
 	}
 
 	/* ===============================

@@ -1,6 +1,14 @@
 package model;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * Contract for algorithms that implement Life-like cellular automata.
@@ -76,4 +84,49 @@ public interface ILife {
 	 * @return the number of currently living cells.
 	 */
 	long populationCount();
+
+	/**
+	 * @return a set of all concrete classes that implement the {@link ILife} interface.
+	 */
+	static List<Class<? extends ILife>> implementations() {
+		var packageName = ILife.class.getPackageName();
+		var directory = packageName.replaceAll("\\.", "/");
+
+		try (
+			var stream = ILife.class.getClassLoader().getResourceAsStream(directory);
+			var reader = new BufferedReader(new InputStreamReader(stream))) {
+			var fileExt = ".class";
+			return reader.lines()
+			             .filter(filename -> filename.endsWith(fileExt))
+			             .map(f -> getClass(packageName, f.substring(0, f.length() - fileExt.length())))
+			             .filter(Objects::nonNull)
+			             .collect(Collectors.toList());
+		}
+		catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	/**
+	 * Helper method for {@link #implementations()}
+	 */
+	private static Class<? extends ILife> getClass(String packageName, String className) {
+		try {
+			var cls = Class.forName(packageName + "." + className);
+			var mods = cls.getModifiers();
+
+			// Filter for concrete subclasses of ILife only
+
+			if (Modifier.isInterface(mods) || Modifier.isAbstract(mods))
+				return null;
+
+			if (!ILife.class.isAssignableFrom(cls))
+				return null;
+
+			return cls.asSubclass(ILife.class);
+		}
+		catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }
