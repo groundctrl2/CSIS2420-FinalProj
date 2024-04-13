@@ -87,7 +87,7 @@ public class ViewController {
     private int nrows;
 
     // handle for the implementation of the simulation itself
-    private ILife model = new model.ZombieLife();
+    private ILife model = new model.VampireLife();
 
     // ================
     // Animation stuff
@@ -226,7 +226,7 @@ public class ViewController {
             reactToStep(model.step(this::setDisplayCell));
         });
     }
-
+    
     /**
      * Nonsense.
      */
@@ -236,9 +236,9 @@ public class ViewController {
             restart = false;
             flavorText.setText("Another round.");
         }
-
+        
         if (change)
-            stepCount++;
+        	stepCount++;
         else {
             // Stop animating if the simulation stalls (reaches a fixed point).
             if (isPlaying)
@@ -403,8 +403,17 @@ public class ViewController {
      */
     private void decideColor(GraphicsContext g, CellState state) {
     	switch(state) {
+    	case VAMPIRE:
+    		if (ILife.RANDOM.nextBoolean())
+    			g.setFill(Color.rgb(97, 22, 24));
+    		else
+    			g.setFill(Color.rgb(130, 20, 21));
+    		break;
 		case ZOMBIE:
-			g.setFill(Color.GREEN);
+			if (ILife.RANDOM.nextBoolean())
+    			g.setFill(Color.rgb(49, 87, 44));
+    		else
+    			g.setFill(Color.rgb(79, 119, 45));
 			break;
 		case ALIVE:
 			g.setFill(Color.BLACK);
