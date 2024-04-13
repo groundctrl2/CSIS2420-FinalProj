@@ -15,75 +15,75 @@
 <?import javafx.scene.text.Text?>
 
 <BorderPane id="app-container" 
-            stylesheets="@styles.css" 
-            fx:controller="application.ViewController"
-            fx:id="appContainer"
-            xmlns="http://javafx.com/javafx/21" 
-            xmlns:fx="http://javafx.com/fxml/1"
-            >
-    <top>
-        <HBox id="top-box" fx:id="topBox" BorderPane.alignment="CENTER">
-            <Text id="title-text" fx:id="titleText" styleClass="big-text" text="THE GAME OF LIFE" />
-        </HBox>
-    </top>
-    
-    <center>
-        <!-- 
-            Note: this is a bit of a hack. We want the inner canvas to fill the center
-            region, but also allow a border. The border creates an inset which throws
-            off the size-bindings ever so slightly. Right now, we place the canvas
-            inside of an inner pane whose dimensions will perfectly bind to the canvas
-            dimensions, and then in the controller initializers, we will anchor that 
-            inner pane against the AnchorPane insets. The alternative is a custom
-            binding for the canvas dimensions against the outer pane's insets. 
-        -->
-        <AnchorPane id="center-pane" fx:id="centerPane" BorderPane.alignment="CENTER">
-            <Pane id="canvas-holder" fx:id="canvasHolder">
-                <Canvas id="canvas-of-life" fx:id="canvas" />
-            </Pane>
-        </AnchorPane>
-    </center>
-    
-    <bottom>
-        <VBox id="bottom-box" fx:id="bottomBox" BorderPane.alignment="CENTER">
-            <HBox id="flavor-text-group" fx:id="flavorTextGroup">
-                <Text id="flavor-text" fx:id="flavorText" styleClass="app-text" 
-                      text="In the beginning, there was nothing..." 
-                      />
-            </HBox>
-            
-            <HBox id="button-group" fx:id="buttonGroup">
-                <Button id="clear-button"      fx:id="clearButton"     styleClass="cancel-button" text="CLEAR" />
-                <Button id="random-button"     fx:id="randomButton"    styleClass="cancel-button" text="RANDOM" />
-                <Button id="pause-play-button" fx:id="pausePlayButton" styleClass="app-button" text="PLAY" />
-                <Button id="step-button"       fx:id="stepButton"      styleClass="app-button" text="STEP" />
-            </HBox>
-            
-            <HBox id="misc-group" fx:id="miscGroup">
-                <Text id="debug-text" fx:id="debugText" 
-                      text="Nothing to report" 
-                      BorderPane.alignment="CENTER_LEFT"
-                      />
-                      
-                <Region id="misc-group-spacer" HBox.hgrow="ALWAYS" />
-                
-                <HBox id="tps-slider-group" fx:id="tpsSliderGroup">
-                    <Label id="tps-slider-label" fx:id="tpsSliderLabel" styleClass="app-label" 
-                           text="_Ticks per second: "
-                           labelFor="${tpsSlider}"
-                           mnemonicParsing="true"
-                           />
-                    
-                    <Slider id="tps-slider" fx:id="tpsSlider" 
-                            min="1" 
-                            max="60"
-                            blockIncrement="1" 
-                            />
-                    
-                    <!-- value will be set in controller since we need to convert double -> int -->
-                    <Label id="tps-slider-value" fx:id="tpsSliderValue" styleClass="app-label" />
-                </HBox>
-            </HBox>
-        </VBox>
-    </bottom>
+	        stylesheets="@styles.css" 
+	        fx:controller="application.ViewController"
+	        fx:id="appContainer"
+	        xmlns="http://javafx.com/javafx/21" 
+	        xmlns:fx="http://javafx.com/fxml/1"
+	        >
+	<top>
+		<HBox id="top-box" fx:id="topBox" BorderPane.alignment="CENTER">
+			<Text id="title-text" fx:id="titleText" styleClass="big-text" text="THE GAME OF LIFE" />
+		</HBox>
+	</top>
+	
+	<center>
+		<!-- 
+			Note: this is a bit of a hack. We want the inner canvas to fill the center
+			region, but also allow a border. The border creates an inset which throws
+			off the size-bindings ever so slightly. Right now, we place the canvas
+			inside of an inner pane whose dimensions will perfectly bind to the canvas
+			dimensions, and then in the controller initializers, we will anchor that 
+			inner pane against the AnchorPane insets. The alternative is a custom
+			binding for the canvas dimensions against the outer pane's insets. 
+		-->
+		<AnchorPane id="center-pane" fx:id="centerPane" BorderPane.alignment="CENTER">
+			<Pane id="canvas-holder" fx:id="canvasHolder">
+				<Canvas id="canvas-of-life" fx:id="canvas" />
+			</Pane>
+		</AnchorPane>
+	</center>
+	
+	<bottom>
+		<VBox id="bottom-box" fx:id="bottomBox" BorderPane.alignment="CENTER">
+			<HBox id="flavor-text-group" fx:id="flavorTextGroup">
+				Text id="flavor-text" fx:id="flavorText" styleClass="app-text" 
+				     text="In the beginning, there was nothing..." 
+				     />
+			</HBox>
+			
+			<HBox id="button-group" fx:id="buttonGroup">
+				<Button id="clear-button"      fx:id="clearButton"     styleClass="cancel-button" text="CLEAR" />
+				<Button id="random-button"     fx:id="randomButton"    styleClass="cancel-button" text="RANDOM" />
+				<Button id="pause-play-button" fx:id="pausePlayButton" styleClass="app-button" text="PLAY" />
+				<Button id="step-button"       fx:id="stepButton"      styleClass="app-button" text="STEP" />
+			</HBox>
+			
+			<HBox id="misc-group" fx:id="miscGroup">
+				<Text id="debug-text" fx:id="debugText" 
+				      text="Nothing to report" 
+				      BorderPane.alignment="CENTER_LEFT"
+				      />
+				
+				<Region id="misc-group-spacer" HBox.hgrow="ALWAYS" />
+				
+				<HBox id="tps-slider-group" fx:id="tpsSliderGroup">
+					<Label id="tps-slider-label" fx:id="tpsSliderLabel" styleClass="app-label" 
+					       text="_Ticks per second: "
+					       labelFor="${tpsSlider}"
+					       mnemonicParsing="true"
+					       />
+					
+					<Slider id="tps-slider" fx:id="tpsSlider" 
+					        min="1" 
+					        max="60"
+					        blockIncrement="1" 
+					        />
+					
+					<!-- value will be set in controller since we need to convert double -> int -->
+					<Label id="tps-slider-value" fx:id="tpsSliderValue" styleClass="app-label" />
+				</HBox>
+			</HBox>
+		</VBox>
+	</bottom>
 </BorderPane>
