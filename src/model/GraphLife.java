@@ -70,15 +70,15 @@ public class GraphLife implements ILife {
 		int col = convertToCol(index);
 
 		int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows};
-        int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};
+		int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};
 
-        for (int r : rowOffsets)
-    		for (int c : colOffsets)
-    			if (r != row || c != col) { // Disclude current cell
-    				int neighbor = convertToIndex(r, c);
-    				if (hasEdge(index, neighbor) != true)
-    					world.addEdge(index, neighbor);
-    			}
+		for (int r : rowOffsets)
+			for (int c : colOffsets)
+				if (r != row || c != col) { // Disclude current cell
+					int neighbor = convertToIndex(r, c);
+					if (hasEdge(index, neighbor) != true)
+						world.addEdge(index, neighbor);
+				}
 	}
 
 	/**
@@ -104,9 +104,9 @@ public class GraphLife implements ILife {
 	public void randomize() {
 		for (int current = 0; current < cells.length; current++)
 			if (RANDOM.nextBoolean())
-                cells[current] = CellState.ALIVE;
-            else
-            	cells[current] = CellState.DEAD;
+				cells[current] = CellState.ALIVE;
+			else
+				cells[current] = CellState.DEAD;
 	}
 
 	@Override
@@ -125,12 +125,12 @@ public class GraphLife implements ILife {
 
 		// Calculate needed updates
 		for (int current = 0; current < cells.length; current++) {
-    		// Count amount of alive neighbors
-    		int aliveNeighbors = 0;
+			// Count amount of alive neighbors
+			int aliveNeighbors = 0;
 			for (int neighbor : world.adj(current)) {
-    			if (cells[neighbor] == CellState.ALIVE)
-    				aliveNeighbors++;
-    		}
+				if (cells[neighbor] == CellState.ALIVE)
+					aliveNeighbors++;
+			}
 
 			// Record needed updates
 			int row = convertToRow(current);
@@ -144,41 +144,41 @@ public class GraphLife implements ILife {
 				if (aliveNeighbors == 3) // Dead cell with 3 neighbors becomes alive.
 					queue.enqueue(new Cell(row, col, CellState.ALIVE));
 			}
-    	}
+		}
 
 		boolean worldChanged = false;
 
-    	// Make needed updates (done afterwards to prevent invalid updates)
-    	while (!queue.isEmpty()) {
-    		Cell cell = queue.dequeue();
+		// Make needed updates (done afterwards to prevent invalid updates)
+		while (!queue.isEmpty()) {
+			Cell cell = queue.dequeue();
 
-            // Invoke callback if a new state differs from old state
-            if (cell.state() != get(cell.row(), cell.col())) {
-                action.invoke(cell.row(), cell.col(), cell.state());
-                worldChanged = true;
-            }
+			// Invoke callback if a new state differs from old state
+			if (cell.state() != get(cell.row(), cell.col())) {
+				action.invoke(cell.row(), cell.col(), cell.state());
+				worldChanged = true;
+			}
 
-    		set(cell.row(), cell.col(), cell.state());
-    	}
+			set(cell.row(), cell.col(), cell.state());
+		}
 
-    	return worldChanged;
+		return worldChanged;
 	}
 
 	@Override
 	public void forAllLife(Callback action) {
 		for (int current = 0; current < cells.length; current++)
 			if (cells[current] == CellState.ALIVE)
-            	action.invoke(convertToRow(current), convertToCol(current), cells[current]);
+				action.invoke(convertToRow(current), convertToCol(current), cells[current]);
 	}
 
 	@Override
 	public long populationCount() {
-	    long count = 0;
+		long count = 0;
 
-	    for (var state : cells)
-	        if (state == CellState.ALIVE)
-	            count++;
+		for (var state : cells)
+			if (state == CellState.ALIVE)
+				count++;
 
-	    return count;
+		return count;
 	}
 }

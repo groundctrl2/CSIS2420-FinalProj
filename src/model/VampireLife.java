@@ -136,154 +136,154 @@ public class VampireLife implements ILife {
 		// Calculate needed updates
 		for (int current = 0; current < cells.length; current++) {
 			// If cell is vampire
-    		if ((cells[current] == CellState.VAMPIRE)) {
-    			// Find alive cells
-    			ArrayList<Integer> aliveCells = new ArrayList<>();
-    			for (int cell = 0; cell < cells.length; cell++)
-    				if (cells[cell] == CellState.ALIVE)
-    					aliveCells.add(cell);
-    			
-    			int oldRow = convertToRow(current);
-    			int oldCol = convertToCol(current);
-    			
-    			// if vampire count goes over 4, some die. Viago, Vladislav, Deacon and Petyr forever.
-    			if (vampireCount > 4) {
-    				queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
-    				vampireTargets[current][0] = -1; // Reset target
-    				vampireTargets[current][1] = 0; // Reset target step count
-    				vampireCount--;
-    			} 
-    			// Else if there's alive cells to infect, get em.
-    			else if (aliveCells.size() > 0) {
-    				BreadthFirstPaths bfs = new BreadthFirstPaths(world, current);
-    				
-    				// If current target has been chased too long or it hasn't been found yet, get new one.
-    				if (vampireTargets[current][1] > 5 || vampireTargets[current][0] == -1) {
-    					vampireTargets[current][1] = 0; // Reset target step count
-    					vampireTargets[current][0] = aliveCells.get(0);
-            			int closestDistance = bfs.distTo(vampireTargets[current][0]);
-            			
-            			for (int i = 1; i < aliveCells.size(); i++) {
-            				int currentCell = aliveCells.get(i);
-            				int currentDistance = bfs.distTo(aliveCells.get(i));
-            				if (currentDistance < closestDistance)
-            					vampireTargets[current][0] = currentCell;
-            			}
-    				}
-    				// Else keep current target and record that its been pursued while dead again.
-    				else {
-    					if (cells[vampireTargets[current][0]] == CellState.DEAD)
-    						vampireTargets[current][1]++;
-    				}
-        			
-    				// Get the next position.
-    				var path = bfs.pathTo(vampireTargets[current][0]).iterator();
-    				path.next();
-    				int nextPosition = current;
-    				if (path.hasNext())
-    					nextPosition = path.next();
-        			
-        			// Ensure vampire only moves into empty/dead space.
-        			// if next position not empty, pick a random empty position or stay in place.
-        			if (cells[nextPosition] != CellState.DEAD) {
-        				// Get all possible positions
-        				ArrayList<Integer> availablePositions = new ArrayList<Integer>();
-        				availablePositions.add(current);
-        				
-        				var neighbors = world.adj(current);
-        				for (int neighbor : neighbors) {
-        					if (cells[neighbor] == CellState.DEAD)
-        						availablePositions.add(neighbor);
-        				}
-        				
-        				// Pick a random position for next position
-        				nextPosition = availablePositions.get(RANDOM.nextInt(availablePositions.size()));
-        			}
-        			
-        			// If moving, move.
-        			if (current != nextPosition) {
-            			int newRow = convertToRow(nextPosition);
-            			int newCol = convertToCol(nextPosition);
-            			
-            			queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
-            			queue.enqueue(new Cell(newRow, newCol, CellState.VAMPIRE));
-            			
-            			// Set new vampire target values
-            			vampireTargets[convertToIndex(newRow, newCol)][0] = vampireTargets[current][0];
-            			vampireTargets[convertToIndex(newRow, newCol)][1] = vampireTargets[current][1];
-            			vampireTargets[current][0] = -1;
-            			vampireTargets[current][1] = 0;
-        			} 
-        			// If not moving, stay in place
-        			else {
-        				queue.enqueue(new Cell(oldRow, oldCol, CellState.VAMPIRE));
-        			}
-    			}
-    			// Else vampire lives in immortal peace.
-    			else {
-    				queue.enqueue(new Cell(oldRow, oldCol, CellState.VAMPIRE));
-    			}
-    		}
-    		// else cell is ALIVE or DEAD
+			if ((cells[current] == CellState.VAMPIRE)) {
+				// Find alive cells
+				ArrayList<Integer> aliveCells = new ArrayList<>();
+				for (int cell = 0; cell < cells.length; cell++)
+					if (cells[cell] == CellState.ALIVE)
+						aliveCells.add(cell);
+
+				int oldRow = convertToRow(current);
+				int oldCol = convertToCol(current);
+
+				// if vampire count goes over 4, some die. Viago, Vladislav, Deacon and Petyr forever.
+				if (vampireCount > 4) {
+					queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
+					vampireTargets[current][0] = -1; // Reset target
+					vampireTargets[current][1] = 0; // Reset target step count
+					vampireCount--;
+				}
+				// Else if there's alive cells to infect, get em.
+				else if (aliveCells.size() > 0) {
+					BreadthFirstPaths bfs = new BreadthFirstPaths(world, current);
+
+					// If current target has been chased too long or it hasn't been found yet, get new one.
+					if (vampireTargets[current][1] > 5 || vampireTargets[current][0] == -1) {
+						vampireTargets[current][1] = 0; // Reset target step count
+						vampireTargets[current][0] = aliveCells.get(0);
+						int closestDistance = bfs.distTo(vampireTargets[current][0]);
+
+						for (int i = 1; i < aliveCells.size(); i++) {
+							int currentCell = aliveCells.get(i);
+							int currentDistance = bfs.distTo(aliveCells.get(i));
+							if (currentDistance < closestDistance)
+								vampireTargets[current][0] = currentCell;
+						}
+					}
+					// Else keep current target and record that its been pursued while dead again.
+					else {
+						if (cells[vampireTargets[current][0]] == CellState.DEAD)
+							vampireTargets[current][1]++;
+					}
+
+					// Get the next position.
+					var path = bfs.pathTo(vampireTargets[current][0]).iterator();
+					path.next();
+					int nextPosition = current;
+					if (path.hasNext())
+						nextPosition = path.next();
+
+					// Ensure vampire only moves into empty/dead space.
+					// if next position not empty, pick a random empty position or stay in place.
+					if (cells[nextPosition] != CellState.DEAD) {
+						// Get all possible positions
+						ArrayList<Integer> availablePositions = new ArrayList<Integer>();
+						availablePositions.add(current);
+
+						var neighbors = world.adj(current);
+						for (int neighbor : neighbors) {
+							if (cells[neighbor] == CellState.DEAD)
+								availablePositions.add(neighbor);
+						}
+
+						// Pick a random position for next position
+						nextPosition = availablePositions.get(RANDOM.nextInt(availablePositions.size()));
+					}
+
+					// If moving, move.
+					if (current != nextPosition) {
+						int newRow = convertToRow(nextPosition);
+						int newCol = convertToCol(nextPosition);
+
+						queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
+						queue.enqueue(new Cell(newRow, newCol, CellState.VAMPIRE));
+
+						// Set new vampire target values
+						vampireTargets[convertToIndex(newRow, newCol)][0] = vampireTargets[current][0];
+						vampireTargets[convertToIndex(newRow, newCol)][1] = vampireTargets[current][1];
+						vampireTargets[current][0] = -1;
+						vampireTargets[current][1] = 0;
+					}
+					// If not moving, stay in place
+					else {
+						queue.enqueue(new Cell(oldRow, oldCol, CellState.VAMPIRE));
+					}
+				}
+				// Else vampire lives in immortal peace.
+				else {
+					queue.enqueue(new Cell(oldRow, oldCol, CellState.VAMPIRE));
+				}
+			}
+			// else cell is ALIVE or DEAD
 			else {
-    			// Count amount of alive neighbors
-        		int aliveNeighbors = 0;
-    			for (int neighbor : world.adj(current)) {
-        			if (cells[neighbor] == CellState.ALIVE)
-        				aliveNeighbors++;
-        			
-        			if (cells[neighbor] == CellState.VAMPIRE);
-        		}
-    			
-    			// Check if there's a vampire neighbor
-    			boolean vampireNeighbor = false;
-    			for (int neighbor : world.adj(current)) {
-        			if (cells[neighbor] == CellState.VAMPIRE)
-        				vampireNeighbor = true;
-        		}
+				// Count amount of alive neighbors
+				int aliveNeighbors = 0;
+				for (int neighbor : world.adj(current)) {
+					if (cells[neighbor] == CellState.ALIVE)
+						aliveNeighbors++;
 
-    			// Record needed updates
-    			int row = convertToRow(current);
-    			int col = convertToCol(current);
+					if (cells[neighbor] == CellState.VAMPIRE);
+				}
 
-    			if (cells[current] == CellState.ALIVE) {
-    				if (vampireNeighbor) {// If cell has a vampire neighbor, cell becomes a vampire
-    					queue.enqueue(new Cell(row, col, CellState.VAMPIRE));
-    					vampireCount++;
-    					vampireTargets[current][0] = -1; // Reset target
-        				vampireTargets[current][1] = 0; // Reset target step count
-    				}
-    				else if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if between 2-3 neighbors.
-    					queue.enqueue(new Cell(row, col, CellState.DEAD));
-    			}
-    			else { // if (cells[i].state() == CellState.DEAD)
-    				if (aliveNeighbors == 3) // Dead cell with 3 neighbors becomes alive.
-    					queue.enqueue(new Cell(row, col, CellState.ALIVE));
-    			}
-			
-    		}
-    	}
+				// Check if there's a vampire neighbor
+				boolean vampireNeighbor = false;
+				for (int neighbor : world.adj(current)) {
+					if (cells[neighbor] == CellState.VAMPIRE)
+						vampireNeighbor = true;
+				}
+
+				// Record needed updates
+				int row = convertToRow(current);
+				int col = convertToCol(current);
+
+				if (cells[current] == CellState.ALIVE) {
+					if (vampireNeighbor) {// If cell has a vampire neighbor, cell becomes a vampire
+						queue.enqueue(new Cell(row, col, CellState.VAMPIRE));
+						vampireCount++;
+						vampireTargets[current][0] = -1; // Reset target
+						vampireTargets[current][1] = 0; // Reset target step count
+					}
+					else if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if between 2-3 neighbors.
+						queue.enqueue(new Cell(row, col, CellState.DEAD));
+				}
+				else { // if (cells[i].state() == CellState.DEAD)
+					if (aliveNeighbors == 3) // Dead cell with 3 neighbors becomes alive.
+						queue.enqueue(new Cell(row, col, CellState.ALIVE));
+				}
+
+			}
+		}
 
 		boolean worldChanged = false;
 
-    	// Make needed updates (done afterwards to prevent invalid updates)
+		// Make needed updates (done afterwards to prevent invalid updates)
 		int newvampireCount = 0;
-    	while (!queue.isEmpty()) {
-    		Cell cell = queue.dequeue();
+		while (!queue.isEmpty()) {
+			Cell cell = queue.dequeue();
 
-            // Invoke callback if a new state differs from old state
-            if (cell.state() != get(cell.row(), cell.col())) {
-                action.invoke(cell.row(), cell.col(), cell.state());
-                worldChanged = true;
-            }
-    		set(cell.row(), cell.col(), cell.state());
-    		
-    		if (cell.state() == CellState.VAMPIRE)
-    			newvampireCount++;
-    	}
-    	vampireCount = newvampireCount;
-    			
-    	return worldChanged;
+			// Invoke callback if a new state differs from old state
+			if (cell.state() != get(cell.row(), cell.col())) {
+				action.invoke(cell.row(), cell.col(), cell.state());
+				worldChanged = true;
+			}
+			set(cell.row(), cell.col(), cell.state());
+
+			if (cell.state() == CellState.VAMPIRE)
+				newvampireCount++;
+		}
+		vampireCount = newvampireCount;
+
+		return worldChanged;
 	}
 
 	@Override

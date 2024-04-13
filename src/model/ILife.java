@@ -11,69 +11,69 @@ import java.util.Random;
  *
  */
 public interface ILife {
-    /**
-     * A convenience class for holding multiple return values / parameters.
-     */
-    record Cell(int row, int col, CellState state) {}
+	/**
+	 * A convenience class for holding multiple return values / parameters.
+	 */
+	record Cell(int row, int col, CellState state) {}
 
-    @FunctionalInterface
-    interface Callback {
-        void invoke(int row, int col, CellState state);
-    }
+	@FunctionalInterface
+	interface Callback {
+		void invoke(int row, int col, CellState state);
+	}
 
-    /**
-     * For use by implementing classes.
-     *
-     * @see #randomize()
-     */
-    static final Random RANDOM = new Random();
+	/**
+	 * For use by implementing classes.
+	 *
+	 * @see #randomize()
+	 */
+	static final Random RANDOM = new Random();
 
-    /**
-     * Re-instantiate the world with new dimensions.
-     */
-    void resize(int nrows, int ncols);
+	/**
+	 * Re-instantiate the world with new dimensions.
+	 */
+	void resize(int nrows, int ncols);
 
-    /**
-     * End all life.
-     */
-    void clear();
+	/**
+	 * End all life.
+	 */
+	void clear();
 
-    /**
-     * Chaos!
-     */
-    void randomize();
+	/**
+	 * Chaos!
+	 */
+	void randomize();
 
-    /**
-     * Queries the state of a cell.
-     */
-    CellState get(int row, int col);
+	/**
+	 * Queries the state of a cell.
+	 */
+	CellState get(int row, int col);
 
-    /**
-     * Set the specified cell to the given state.
-     */
-    void set(int row, int col, CellState state);
+	/**
+	 * Set the specified cell to the given state.
+	 */
+	void set(int row, int col, CellState state);
 
-    /**
-     * Advance the world by one tick. The callback should be invoked for each cell
-     * whose state was changed from the last tick.
-     *
-     * @param action Used to notify the caller (i.e., the controller) that a state
-     *               change occurred for a given cell in order to provide incremental
-     *               updates.
-     * @return {@code true} if the world was changed at all as a result of this step,
-     *         {@code false} otherwise.
-     */
-    boolean step(Callback action);
+	/**
+	 * Advance the world by one tick. The callback should be invoked for each cell
+	 * whose state was changed from the last tick.
+	 *
+	 * @param action Used to notify the caller (i.e., the controller) that a state
+	 *               change occurred for a given cell in order to provide incremental
+	 *               updates.
+	 * @return {@code true} if the world was changed at all as a result of this step,
+	 *         {@code false} otherwise.
+	 */
+	boolean step(Callback action);
 
-    /**
-     * Execute an action for all live cells.
-     *
-     * @param action Used to provide the caller with the data for each living cell.
-     */
-    void forAllLife(Callback action);
+	/**
+	 * Execute an action for all live cells.
+	 *
+	 * @param action Used to provide the caller with the data for each living cell.
+	 */
+	void forAllLife(Callback action);
 
-    /**
-     * @return the number of currently living cells.
-     */
-    long populationCount();
+	/**
+	 * @return the number of currently living cells.
+	 */
+	long populationCount();
 }
