@@ -63,6 +63,8 @@ public class SparseLife implements ILife {
 
     @Override
     public void randomize() {
+        liveSet.clear();
+
         for (int r = 0; r < nrows; r++)
             for (int c = 0; c < ncols; c++)
                 if (RANDOM.nextBoolean())
