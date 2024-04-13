@@ -30,9 +30,9 @@ public class ZombieLife implements ILife {
 			initializeNeighbors(current);
 
 		// Initialize zombie targets
-		for (int[] zombie : zombieTargets) {
-			zombie[0] = -1; // Target
-			zombie[1] = 0; // Amount of steps spent chasing target.
+		for (int i = 0; i < zombieTargets.length; i++) {
+			zombieTargets[i][0] = -1; // Target
+			zombieTargets[i][1] = 0; // Amount of steps spent chasing target.
 		}
 	}
 
@@ -135,15 +135,104 @@ public class ZombieLife implements ILife {
 
 		// Calculate needed updates
 		for (int current = 0; current < cells.length; current++) {
-			// ==============
-		    // ALIVE and DEAD
-		    // ==============
-    		if (cells[current] != CellState.ZOMBIE) {
+			// If cell is ZOMBIE
+    		if ((cells[current] == CellState.ZOMBIE)) {
+    			// Find alive cells
+    			ArrayList<Integer> aliveCells = new ArrayList<>();
+    			for (int cell = 0; cell < cells.length; cell++)
+    				if (cells[cell] == CellState.ALIVE)
+    					aliveCells.add(cell);
+    			
+    			int oldRow = convertToRow(current);
+    			int oldCol = convertToCol(current);
+    			
+    			// if zombie count gets too high, they randomly (50-50) starve.
+    			if ((double) zombieCount / aliveCells.size() > 1.5 && RANDOM.nextBoolean()) {
+    				queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
+    				zombieTargets[current][0] = -1; // Reset target
+    				zombieTargets[current][1] = 0; // Reset target step count
+    				zombieCount--;
+    			} 
+    			// Else if there's alive cells to infect, get em.
+    			else if (aliveCells.size() > 0) {
+    				BreadthFirstPaths bfs = new BreadthFirstPaths(world, current);
+    				
+    				// If current target has been chased too long or it hasn't been found yet, get new one.
+    				if (zombieTargets[current][1] > 5 || zombieTargets[current][0] == -1) {
+    					zombieTargets[current][1] = 0; // Reset target step count
+    					zombieTargets[current][0] = aliveCells.get(0);
+            			int closestDistance = bfs.distTo(zombieTargets[current][0]);
+            			
+            			for (int i = 1; i < aliveCells.size(); i++) {
+            				int currentCell = aliveCells.get(i);
+            				int currentDistance = bfs.distTo(aliveCells.get(i));
+            				if (currentDistance < closestDistance)
+            					zombieTargets[current][0] = currentCell;
+            			}
+    				}
+    				// Else keep current target and record that its been pursued while dead again.
+    				else {
+    					if (cells[zombieTargets[current][0]] == CellState.DEAD)
+    						zombieTargets[current][1]++;
+    				}
+        			
+    				// Get the next position.
+    				var path = bfs.pathTo(zombieTargets[current][0]).iterator();
+    				path.next();
+    				int nextPosition = current;
+    				if (path.hasNext())
+    					nextPosition = path.next();
+        			
+        			// Ensure zombie only moves into empty/dead space.
+        			// if next position not empty, pick a random empty position or stay in place.
+        			if (cells[nextPosition] != CellState.DEAD) {
+        				// Get all possible positions
+        				ArrayList<Integer> availablePositions = new ArrayList<Integer>();
+        				availablePositions.add(current);
+        				
+        				var neighbors = world.adj(current);
+        				for (int neighbor : neighbors) {
+        					if (cells[neighbor] == CellState.DEAD)
+        						availablePositions.add(neighbor);
+        				}
+        				
+        				// Pick a random position for next position
+        				nextPosition = availablePositions.get(RANDOM.nextInt(availablePositions.size()));
+        			}
+        			
+        			// If moving, move.
+        			if (current != nextPosition) {
+            			int newRow = convertToRow(nextPosition);
+            			int newCol = convertToCol(nextPosition);
+            			
+            			queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
+            			queue.enqueue(new Cell(newRow, newCol, CellState.ZOMBIE));
+            			
+            			// Set new zombie target values
+            			zombieTargets[convertToIndex(newRow, newCol)][0] = zombieTargets[current][0];
+            			zombieTargets[convertToIndex(newRow, newCol)][1] = zombieTargets[current][1];
+            			zombieTargets[current][0] = -1;
+            			zombieTargets[current][1] = 0;
+        			} 
+        			// If not moving, stay in place
+        			else {
+        				queue.enqueue(new Cell(oldRow, oldCol, CellState.ZOMBIE));
+        			}
+    			}
+    			// Else zombie starves.
+    			else {
+    				queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
+    			}
+    		}
+    		// else cell is ALIVE or DEAD
+			else {
     			// Count amount of alive neighbors
         		int aliveNeighbors = 0;
     			for (int neighbor : world.adj(current)) {
         			if (cells[neighbor] == CellState.ALIVE)
         				aliveNeighbors++;
+        			
+        			if (cells[neighbor] == CellState.ZOMBIE);
         		}
     			
     			// Check if there's a zombie neighbor
@@ -158,8 +247,11 @@ public class ZombieLife implements ILife {
     			int col = convertToCol(current);
 
     			if (cells[current] == CellState.ALIVE) {
-    				if (zombieNeighbor)// If cell has a zombie neighbor, cell becomes a zombie.
+    				if (zombieNeighbor) {// If cell has a zombie neighbor, cell becomes a zombie.
     					queue.enqueue(new Cell(row, col, CellState.ZOMBIE));
+    					zombieTargets[current][0] = -1; // Reset target
+        				zombieTargets[current][1] = 0; // Reset target step count
+    				}
     				else if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if between 2-3 neighbors.
     					queue.enqueue(new Cell(row, col, CellState.DEAD));
     			}
@@ -167,84 +259,7 @@ public class ZombieLife implements ILife {
     				if (aliveNeighbors == 3) // Dead cell with 3 neighbors becomes alive.
     					queue.enqueue(new Cell(row, col, CellState.ALIVE));
     			}
-			// =======
-		    // ZOMBIES
-		    // =======
-    		} else { // cells[current] == CellState.ZOMBIE
-    			// Find alive cells
-    			ArrayList<Integer> aliveCells = new ArrayList<>();
-    			for (int cell = 0; cell < cells.length; cell++)
-    				if (cells[cell] == CellState.ALIVE)
-    					aliveCells.add(cell);
-    			
-    			int oldRow = convertToRow(current);
-    			int oldCol = convertToCol(current);
-    			
-    			// If zombie count gets too high, they starve.
-    			if ((double) zombieCount / aliveCells.size() > .75) { // Zombie population never >75% alive population.
-    				queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
-    				zombieCount--;
-    			} 
-    			// Else if there's alive cells to infect, get em.
-    			else if (aliveCells.size() > 0) {
-    				BreadthFirstPaths bfs = new BreadthFirstPaths(world, current);
-    				int target = -1; // Placeholder value
-    				
-    				// If current target has been chased too long or it hasn't been found yet, get new one.
-    				if (zombieTargets[current][1] > 20 || zombieTargets[current][0] == -1) {
-    					target = aliveCells.get(0);
-            			int closestDistance = bfs.distTo(target);
-            			
-            			for (int i = 1; i < aliveCells.size(); i++) {
-            				int currentCell = aliveCells.get(i);
-            				int currentDistance = bfs.distTo(aliveCells.get(i));
-            				if (currentDistance < closestDistance)
-            					target = currentCell;
-            			}
-    				}
-    				// Else keep current target and record that its been pursued again.
-    				else {
-    					target = zombieTargets[current][0];
-    					
-    					if (cells[target] == CellState.DEAD)
-    						zombieTargets[current][1]++;
-    				}
-        			
-    				// Get the next position.
-        			int nextPosition = bfs.pathTo(target).iterator().next();
-        			
-        			// Ensure zombie only moves into empty/dead space.
-        			// if next position not empty, pick a random empty position or stay in place.
-        			if (cells[nextPosition] != CellState.DEAD) {
-        				int randomNextPosition = current;
-        				var neighbors = world.adj(current).iterator();
-        				for (int i = 0; i < RANDOM.nextInt(8); i++) {
-        					randomNextPosition = neighbors.next();
-        				}
-        				
-        				if (cells[randomNextPosition] == CellState.DEAD) {
-    						nextPosition = randomNextPosition;
-    					} else
-        					nextPosition = current;
-        			}
-        			
-        			// Move by one cell
-        			int newRow = convertToRow(nextPosition);
-        			int newCol = convertToCol(nextPosition);
-        			
-        			queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
-        			queue.enqueue(new Cell(newRow, newCol, CellState.ZOMBIE));
-        			
-        			// Set new zombie target values
-        			zombieTargets[convertToIndex(newRow, newCol)][0] = target;
-        			zombieTargets[convertToIndex(newRow, newCol)][1] = zombieTargets[current][1];
-        			zombieTargets[current][0] = -1;
-        			zombieTargets[current][1] = 0;
-    			}
-    			// Else zombie can rest.
-    			else {
-    				queue.enqueue(new Cell(oldRow, oldCol, CellState.ZOMBIE));
-    			}
+			
     		}
     	}
 
@@ -282,7 +297,7 @@ public class ZombieLife implements ILife {
 		long count = 0;
 
 		for (var state : cells)
-			if (state == CellState.ALIVE)
+			if (state == CellState.ALIVE || state == CellState.ZOMBIE)
 				count++;
 
 		return count;
