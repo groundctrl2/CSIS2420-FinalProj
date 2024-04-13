@@ -456,15 +456,16 @@ public class ViewController {
 		if (model.get(row, col) == CellState.DEAD) {
 			model.set(row, col, CellState.ALIVE);
 			g.setFill(Color.BLACK);
+			flavorText.setText("New life spontaneously emerges!");
 		}
-		else { // (model.get(row, col) == CellState.ALIVE)
+		else { // (model.get(row, col) != CellState.DEAD)
 			model.set(row,  col, CellState.DEAD);
 			g.setFill(Color.WHITE);
+			flavorText.setText("The hand of God is cruel.");
 		}
 
 		g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
 
-		flavorText.setText("New life spontaneously emerges!");
 	}
 
 	/**
