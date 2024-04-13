@@ -5,6 +5,11 @@ import java.util.Arrays;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 
+/**
+ * A version of Conway's Game of Life that uses a graph to represent the neighbor relations for each cell.
+ * Instead of the neighbor cells being those sharing an edge and corner, neighbors are the 8 cells a knight's
+ * move away from each cell.
+ */
 public class KnightLife implements ILife {
 	private Graph world;
 	private CellState[] cells; // row-col indexed
@@ -153,10 +158,10 @@ public class KnightLife implements ILife {
 			Cell cell = queue.dequeue();
 
 			// Invoke callback if a new state differs from old state
-            if (cell.state() != get(cell.row(), cell.col())) {
-                action.invoke(cell.row(), cell.col(), cell.state());
-                worldChanged = true;
-            }
+			if (cell.state() != get(cell.row(), cell.col())) {
+				action.invoke(cell.row(), cell.col(), cell.state());
+				worldChanged = true;
+			}
 
 			set(cell.row(), cell.col(), cell.state());
 		}
@@ -173,12 +178,12 @@ public class KnightLife implements ILife {
 
 	@Override
 	public long populationCount() {
-       long count = 0;
+		long count = 0;
 
-        for (var state : cells)
-            if (state == CellState.ALIVE)
-                count++;
+		for (var state : cells)
+			if (state == CellState.ALIVE)
+				count++;
 
-        return count;
-    }
+		return count;
+	}
 }

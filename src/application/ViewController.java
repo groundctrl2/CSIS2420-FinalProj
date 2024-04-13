@@ -5,6 +5,7 @@ import java.time.Duration;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -86,7 +87,7 @@ public class ViewController {
     private int nrows;
 
     // handle for the implementation of the simulation itself
-    private ILife model = new model.SparseLife();
+    private ILife model = new model.ZombieLife();
 
     // ================
     // Animation stuff
@@ -301,7 +302,8 @@ public class ViewController {
         var g = canvas.getGraphicsContext2D();
         double x0 = toXCoord(col);
         double y0 = toYCoord(row);
-        g.setFill(state == CellState.ALIVE ? Color.BLACK : Color.WHITE);
+        
+        decideColor(g, state);
         g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
     };
 
@@ -352,8 +354,9 @@ public class ViewController {
 
         // Fill in cells which are alive according to the model
         g.setFill(Color.BLACK);
-
         model.forAllLife((row, col, state) -> {
+        	decideColor(g, state);
+        	
             double x0 = toXCoord(col);
             double y0 = toYCoord(row);
             g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
@@ -390,5 +393,25 @@ public class ViewController {
         g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
 
         flavorText.setText("New life spontaneously emerges!");
+    }
+    
+    /**
+     * Changes GraphicsContext objects fill color depending on provided CellState.
+     * 
+     * @param g GraphicsContext
+     * @param state CellState
+     */
+    private void decideColor(GraphicsContext g, CellState state) {
+    	switch(state) {
+		case ZOMBIE:
+			g.setFill(Color.GREEN);
+			break;
+		case ALIVE:
+			g.setFill(Color.BLACK);
+			break;
+		default: // DEAD
+			g.setFill(Color.WHITE);
+			break;
+    	}
     }
 }
