@@ -7,7 +7,9 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -68,6 +70,7 @@ public class ViewController {
 	@FXML private Label tpsSliderLabel;
 	@FXML private Slider tpsSlider;
 	@FXML private Label tpsSliderValue;
+	@FXML private ComboBox<Class<? extends ILife>> modelCBox;
 
 	// ==================
 	// Grid/Canvas stuff
@@ -105,7 +108,11 @@ public class ViewController {
 	public void initialize() {
 		adjustCanvasDimensionsForBorderJank();
 		initButtonHandlers();
+		initTpsSliderGroup();
+		initModelSelectorBox();
+	}
 
+	private void initTpsSliderGroup() {
 		// Update tps and slider value label when slider changes value
 		tpsSlider.valueProperty().addListener((ov, oldValue, newValue) -> {
 			ticksPerSecond = newValue.intValue();
@@ -118,6 +125,64 @@ public class ViewController {
 		// Set initial value for slider and its value label
 		tpsSlider.setValue(ticksPerSecond);
 		tpsSliderValue.setText(String.valueOf(ticksPerSecond));
+	}
+
+	private void initModelSelectorBox() {
+		/*
+		 * To customize the display of non-string items in the combo box,
+		 * we need to set the cell factory AND the button cell. For this,
+		 * we have to define a subclass of ListCell and override the
+		 * updateItem() method.
+		 */
+		class CustomCBoxCell extends ListCell<Class<? extends ILife>> {
+			@Override
+			public void updateItem(Class<? extends ILife> cls, boolean empty) {
+				super.updateItem(cls, empty);
+
+				if (empty || cls == null) {
+					setText(null);
+					setGraphic(null);
+				}
+				else {
+					// >>> This is only relevant line in this class <<<
+					// Use the short name of the class rather than full name.
+					setText(cls.getSimpleName());
+				}
+			}
+		}
+
+		modelCBox.setCellFactory(listView -> new CustomCBoxCell());
+		modelCBox.setButtonCell(new CustomCBoxCell());
+
+		// Add implementation classes to the drop-down list
+		var items = modelCBox.getItems();
+		items.add(model.SimpleLife.class);
+		items.add(model.GraphLife.class);
+		items.add(model.KnightLife.class);
+		items.add(model.ZombieLife.class);
+		items.add(model.VampireLife.class);
+		items.add(model.SparseLife.class);
+
+		// Set the current value to the current model's class.
+		modelCBox.setValue(model.getClass());
+
+		// Update the model whenever the combo box value changes.
+		modelCBox.setOnAction(event -> {
+			var selectedClass = modelCBox.getValue();
+
+			if (selectedClass.equals(model.getClass())) {
+				debugText.setText("No change");
+				return;
+			}
+
+			try {
+				model = selectedClass.getConstructor().newInstance();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			resizeModel();
+		});
 	}
 
 	/**
@@ -316,10 +381,17 @@ public class ViewController {
 		canvasHeight = canvas.getHeight();
 		ncols = (int) canvasWidth / CELL_SIZE;
 		nrows = (int) canvasHeight / CELL_SIZE;
+		resizeModel();
+	}
+
+	private void resizeModel() {
 		model.resize(nrows, ncols);
 
 		// reset animation variables
-		isPlaying = false;
+		if (isPlaying)
+			pausePlayButton.fire();
+
+		assert !isPlaying;
 		timestamp = 0;
 		stepCount = 0;
 		flavorText.setText("In the beginning, there was nothing...");
