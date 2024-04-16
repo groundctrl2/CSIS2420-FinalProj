@@ -2,8 +2,10 @@ package application;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 /**
@@ -25,15 +27,23 @@ import javafx.stage.Stage;
  * @see #main
  */
 public class LifeApp extends Application {
-	private static final int WIDTH = 800;
-	private static final int HEIGHT = 600;
-
 	@Override
 	public void start(Stage stage) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("LifeView.fxml"));
 			Parent root = loader.load();
-			Scene scene = new Scene(root, WIDTH, HEIGHT);
+			Scene scene = new Scene(root);
+
+			/*
+			 * Restrict window size to maximum allowance.
+			 * While the user can't manually oversize the window, the window
+			 * may overshoot the visual bounds if the scene contains an oversized
+			 * node (in this case, the main canvas).
+			 */
+			Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+			stage.setMaxWidth(bounds.getWidth());
+			stage.setMaxHeight(bounds.getHeight());
+
 			stage.setTitle("Version 1.0");
 			stage.setScene(scene);
 			stage.show();

@@ -3,7 +3,9 @@ package application;
 import java.time.Duration;
 import java.util.HashMap;
 
+import application.component.SliderBox;
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -12,13 +14,14 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -37,7 +40,7 @@ import model.ILife;
 public class ViewController {
 	/*
 	 * For convenience, we make a handle to each major component in the scene graph,
-	 * even though we might currently use some of them directly.
+	 * even though we might not currently use some of them.
 	 *
 	 * Each @FXML annotated variable is injected from the FXML file by the
 	 * FXMLLoader using the 'fx:id' attributes of each element as the name for the
@@ -51,15 +54,14 @@ public class ViewController {
 	// ==================
 	// Component handles
 	// ==================
-	@FXML private BorderPane appContainer;
+	@FXML private BorderPane root;
 
 	// top stuff
 	@FXML private HBox topBox;
 	@FXML private Text titleText;
 
 	// center stuff
-	@FXML private AnchorPane centerPane;
-	@FXML private Pane canvasHolder;
+	@FXML private ScrollPane centerPane;
 	@FXML private Canvas canvas;
 
 	// bottom stuff
@@ -71,28 +73,29 @@ public class ViewController {
 	@FXML private Button pausePlayButton;
 	@FXML private Button stepButton;
 	@FXML private Text debugText;
-	@FXML private HBox tpsSliderGroup;
-	@FXML private Label tpsSliderLabel;
-	@FXML private Slider tpsSlider;
-	@FXML private Label tpsSliderValue;
+	@FXML private SliderBox tpsControl;
 	@FXML private ComboBox<String> modelCBox;
+
+	// tentative
+	@FXML private SliderBox nrowsControl;
+	@FXML private SliderBox ncolsControl;
+	@FXML private SliderBox cellSizeControl;
+
 
 	// ==================
 	// Grid/Canvas stuff
 	// ==================
 
-	// each cell should be square
-	private static final int CELL_INTERIOR_SIZE = 10;
-	// each cell will have a visible border
-	private static final int CELL_BORDER_WIDTH = 1;
-	// complete size including border
-	private static final int CELL_SIZE = CELL_INTERIOR_SIZE + 2*CELL_BORDER_WIDTH;
-
 	private double canvasWidth;
 	private double canvasHeight;
-	// TODO: deal with remainders
+
 	private int ncols;
 	private int nrows;
+
+	private int cellSize;
+	private int cellInteriorSize;
+
+	private static final int CELL_BORDER_WIDTH = 1;
 
 	// handle for the implementation of the simulation itself
 	private ILife model = new model.VampireLife();
@@ -108,28 +111,63 @@ public class ViewController {
 
 	/**
 	 * Performs post-processing of the scene graph after loading it from the FXML.
-	 * In general, this mostly just adds event handlers for various components.
 	 */
 	public void initialize() {
-		adjustCanvasDimensionsForBorderJank();
+		debugText.setText("cell size: " + cellSize);
+		initCanvasGrid();
 		initButtonHandlers();
-		initTpsSliderGroup();
+		initTpsControls();
 		initModelSelectorBox();
+		initGridSizeControls();
+
+		Platform.runLater(() -> {
+			var scene = root.getScene();
+
+			var originShortcut = new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN);
+			scene.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+				if (originShortcut.match(e)) {
+					debugText.setText("Return to origin");
+					centerPane.setHvalue(0.5);
+					centerPane.setVvalue(0.5);
+				}
+			});
+		});
 	}
 
-	private void initTpsSliderGroup() {
-		// Update tps and slider value label when slider changes value
-		tpsSlider.valueProperty().addListener((ov, oldValue, newValue) -> {
+	private void initGridSizeControls() {
+		ncolsControl.slider.valueProperty().addListener((ov, oldValue, newValue) -> {
+			ncols = newValue.intValue();
+			resizeGrid();
+		});
+
+		nrowsControl.slider.valueProperty().addListener((ov, oldValue, newValue) -> {
+			nrows = newValue.intValue();
+			resizeGrid();
+		});
+
+		cellSizeControl.slider.valueProperty().addListener((ov, oldValue, newValue) -> {
+			cellSize = newValue.intValue();
+			cellInteriorSize = cellSize - 2*CELL_BORDER_WIDTH;
+			resizeGrid();
+		});
+
+		ncols = ncolsControl.getValue();
+		nrows = nrowsControl.getValue();
+		cellSize = cellSizeControl.getValue();
+		cellInteriorSize = cellSize - 2*CELL_BORDER_WIDTH;
+		resizeGrid();
+	}
+
+	private void initTpsControls() {
+		tpsControl.slider.valueProperty().addListener((ov, oldValue, newValue) -> {
 			ticksPerSecond = newValue.intValue();
-			tpsSliderValue.setText(String.valueOf(ticksPerSecond));
 
 			if (isPlaying && ticksPerSecond > 30)
 				flavorText.setText("Chaos!");
 		});
 
-		// Set initial value for slider and its value label
-		tpsSlider.setValue(ticksPerSecond);
-		tpsSliderValue.setText(String.valueOf(ticksPerSecond));
+		// See FXML for initial value.
+		ticksPerSecond = tpsControl.getValue();
 	}
 
 	private void initModelSelectorBox() {
@@ -138,7 +176,7 @@ public class ViewController {
 
 		/*
 		 * Add the name of each concrete model class to the combo box,
-		 * and link the the name to the actual class object in a map.
+		 * and link the name to the actual class object in a map.
 		 */
 		for (var cls : ILife.implementations()) {
 			String key = cls.getSimpleName();
@@ -174,33 +212,11 @@ public class ViewController {
 	/**
 	 * Initializes the canvas.
 	 */
-	private void adjustCanvasDimensionsForBorderJank() {
-		/*
-		 * See the FXML comments above the declaration of the centerPane.
-		 *
-		 * We first anchor the inner pane to the outer pane's insets, then bind the
-		 * canvas dimensions to the inner pane.
-		 *
-		 * This should perfectly align the canvas inside the anchor pane so that (0, 0)
-		 * through (canvas width, canvas height) is immediately inside the borders.
-		 *
-		 * There's probably a better way to accomplish this, but this works, so
-		 * ¯\_(ツ)_/¯
-		 */
-		var insets = centerPane.getInsets();
-		AnchorPane.setTopAnchor(canvasHolder, insets.getTop());
-		AnchorPane.setRightAnchor(canvasHolder, insets.getRight());
-		AnchorPane.setBottomAnchor(canvasHolder, insets.getBottom());
-		AnchorPane.setLeftAnchor(canvasHolder, insets.getLeft());
-
-		// Bind the canvas dimensions to its parent component, so that it
-		// ultimately resizes when the window resizes.
-		canvas.widthProperty().bind(canvasHolder.widthProperty());
-		canvas.heightProperty().bind(canvasHolder.heightProperty());
-
-		// Clear and redraw whenever the canvas viewport is resized.
-		canvas.widthProperty().addListener((ov, oldValue, newValue) -> resizeGrid());
-		canvas.heightProperty().addListener((ov, oldValue, newValue) -> resizeGrid());
+	private void initCanvasGrid() {
+		// Bind canvas container dimensions to the canvas dimensions.
+		centerPane.maxWidthProperty().bind(canvas.widthProperty());
+		centerPane.maxHeightProperty().bind(canvas.heightProperty());
+		resizeGrid();
 
 		// For debugging. TODO: delete this
 		canvas.setOnMouseMoved(event -> {
@@ -352,24 +368,24 @@ public class ViewController {
 
 	/** Convert from y-coordinate to row index, rounding down */
 	private int toRowIndex(double y) {
-		return Math.min((int) (y / CELL_SIZE), nrows - 1);
+		return Math.min((int) (y / cellSize), nrows - 1);
 	}
 
 	/** Convert from x-coordinate to column index, rounding down */
 	private int toColIndex(double x) {
-		return Math.min((int) (x / CELL_SIZE), ncols - 1);
+		return Math.min((int) (x / cellSize), ncols - 1);
 	}
 
 	// TODO: check edge cases of coordinate-to-index conversions (rounding errors?)
 
 	/** Convert from row index to y-coordinate of the top-left of cell interior */
 	private double toYCoord(int row) {
-		return CELL_BORDER_WIDTH + row*CELL_SIZE;
+		return CELL_BORDER_WIDTH + row*cellSize;
 	}
 
 	/** Convert from column index to x-coordinate of the top-left of cell interior */
 	private double toXCoord(int col) {
-		return CELL_BORDER_WIDTH + col*CELL_SIZE;
+		return CELL_BORDER_WIDTH + col*cellSize;
 	}
 
 	/**
@@ -388,7 +404,7 @@ public class ViewController {
 		double y0 = toYCoord(row);
 
 		decideColor(g, state);
-		g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
+		g.fillRect(x0, y0, cellInteriorSize, cellInteriorSize);
 	};
 
 	/**
@@ -396,10 +412,8 @@ public class ViewController {
 	 * doesn't have to.
 	 */
 	private void resizeGrid() {
-		canvasWidth = canvas.getWidth();
-		canvasHeight = canvas.getHeight();
-		ncols = (int) canvasWidth / CELL_SIZE;
-		nrows = (int) canvasHeight / CELL_SIZE;
+		canvas.setWidth(canvasWidth = ncols * cellSize);
+		canvas.setHeight(canvasHeight = nrows * cellSize);
 		resizeModel();
 	}
 
@@ -436,11 +450,11 @@ public class ViewController {
 		g.setLineWidth(2*CELL_BORDER_WIDTH);
 
 		// Draw vertical grid lines
-		for (int x = 0; x < canvasWidth; x += CELL_SIZE)
+		for (int x = 0; x < canvasWidth; x += cellSize)
 			g.strokeLine(x, 0, x, canvasHeight);
 
 		// Draw horizontal grid lines
-		for (int y = 0; y < canvasHeight; y += CELL_SIZE)
+		for (int y = 0; y < canvasHeight; y += cellSize)
 			g.strokeLine(0, y, canvasWidth, y);
 
 		// Fill in cells which are alive according to the model
@@ -450,8 +464,16 @@ public class ViewController {
 
 			double x0 = toXCoord(col);
 			double y0 = toYCoord(row);
-			g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
+			g.fillRect(x0, y0, cellInteriorSize, cellInteriorSize);
 		});
+
+		// Draw origin lines. `CTRL+O` to re-center scroll pane.
+		g.setLineWidth(2*CELL_BORDER_WIDTH);
+		int halfX = ncols / 2 * cellSize;
+		int halfY = nrows / 2 * cellSize;
+		g.setStroke(Color.GRAY);  // a little darker than normal grid lines
+		g.strokeLine(halfX, 0, halfX, canvasHeight);
+		g.strokeLine(0, halfY, canvasWidth, halfY);
 	}
 
 	/**
@@ -483,7 +505,7 @@ public class ViewController {
 			flavorText.setText("The hand of God is cruel.");
 		}
 
-		g.fillRect(x0, y0, CELL_INTERIOR_SIZE, CELL_INTERIOR_SIZE);
+		g.fillRect(x0, y0, cellInteriorSize, cellInteriorSize);
 
 	}
 

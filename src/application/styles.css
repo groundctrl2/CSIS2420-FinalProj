@@ -5,9 +5,9 @@
 }
 
 .root {
-	/* 
-	 * Apparently FX doesn't (currently?) support CSS variables, but does 
-	 * support "looked-up colors". 
+	/*
+	 * Apparently FX doesn't (currently?) support CSS variables, but does
+	 * support "looked-up colors".
 	 */
 	BG-PRIMARY: #576F8D;
 	BG-SECONDARY: white;
@@ -18,7 +18,7 @@
 	BORDER-FOCUSED: darkslateblue;
 	HIGHLIGHT-PRIMARY: turquoise;
 	HIGHLIGHT-DANGER: hotpink;
-	
+
 	-fx-font-size: 14;
 }
 
@@ -45,14 +45,14 @@
 
 .app-button, .cancel-button {
 	-fx-text-fill: BUTTON-TEXT-COLOR;
-	-fx-content-display: center; 
-	
-	-fx-background-color: BG-SECONDARY; 
-	-fx-background-insets: 1; 
-	
-	-fx-border-color: BORDER-COLOR; 
+	-fx-content-display: center;
+
+	-fx-background-color: BG-SECONDARY;
+	-fx-background-insets: 1;
+
+	-fx-border-color: BORDER-COLOR;
 	-fx-border-width: 3;
-	
+
 	-fx-font-size: 18;
 }
 
@@ -66,7 +66,7 @@
 }
 
 .app-button:armed {
-	-fx-background-color: derive(HIGHLIGHT-PRIMARY, -20%);	
+	-fx-background-color: derive(HIGHLIGHT-PRIMARY, -20%);
 }
 
 .cancel-button:hover {
@@ -74,19 +74,19 @@
 }
 
 .cancel-button:armed {
-	-fx-background-color: derive(HIGHLIGHT-DANGER, -20%);	
+	-fx-background-color: derive(HIGHLIGHT-DANGER, -20%);
 }
 
 .app-button:focused, .cancel-button:focused {
 	-fx-border-color: BORDER-FOCUSED;
 }
 
-#app-container {
-	-fx-background-color: BG-PRIMARY; 
-	-fx-background-insets: 8; 
-	
+#app-root {
+	-fx-background-color: BG-PRIMARY;
+	-fx-background-insets: 8;
+
 	-fx-border-color: BORDER-COLOR;
-	-fx-border-width: 3; 
+	-fx-border-width: 3;
 	-fx-border-insets: 8;
 }
 
@@ -100,17 +100,19 @@
 }
 
 #center-pane {
-	-fx-border-color: BORDER-COLOR; 
-	-fx-border-width: 3; 
-	-fx-border-insets: 0 8 0 8; 
-}
+	-fx-background-color: transparent;
+	-fx-border-style: solid outside;
+	-fx-border-color: BORDER-COLOR;
+	-fx-border-width: 3;
+	-fx-border-insets: 0 8 0 8;
 
-#canvas-holder {
-    -fx-background-color: lightgray;
+	-fx-pannable: true;
+	-fx-vbar-policy: never;
+	-fx-hbar-policy: never;
 }
 
 #bottom-box * {
-    -fx-alignment: center;    
+	-fx-alignment: center;
 }
 
 #flavor-text-group {
@@ -127,10 +129,27 @@
 }
 
 #misc-group {
-	-fx-spacing: 10;
+	-fx-spacing: 40;
 	-fx-padding: 0 20 10 20;
 }
 
 #debug-text {
 	-fx-fill: lightgray;
+}
+
+#size-controls {
+	-fx-spacing: 40;
+	-fx-padding: 0 10 10 10;
+}
+
+.slider-box {
+	-fx-spacing: 8;
+}
+
+.slider-box .label {
+	-fx-text-fill: TEXT-PRIMARY;
+}
+
+.slider-box .value-label {
+	-fx-font-weight: bold;
 }
