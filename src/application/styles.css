@@ -1,9 +1,8 @@
-/* Styles for the scene graph in LifeView.fxml */
-
-@font-face {
-	src: url('../resources/fonts/Bungee-Regular.ttf');
-}
-
+/* Styles for the scene graph in LifeView.fxml
+ *
+ * Relative/local resource-based styles are currently placed in a separate
+ * stylesheet to allow the live style-editor to function.
+ */
 .root {
 	/*
 	 * Apparently FX doesn't (currently?) support CSS variables, but does
@@ -23,8 +22,8 @@
 }
 
 .app-text, .big-text, .app-button, .cancel-button {
-    -fx-font-family: 'Bungee';
-    -fx-text-alignment: center;
+	-fx-font-family: 'Bungee';
+	-fx-text-alignment: center;
 }
 
 .app-text {
@@ -84,10 +83,12 @@
 #app-root {
 	-fx-background-color: BG-PRIMARY;
 	-fx-background-insets: 8;
-
 	-fx-border-color: BORDER-COLOR;
 	-fx-border-width: 3;
 	-fx-border-insets: 8;
+
+	/* padding on the right for the toolbar */
+	-fx-padding: 0 8 0 0;
 }
 
 #top-box {
@@ -109,6 +110,81 @@
 	-fx-pannable: true;
 	-fx-vbar-policy: never;
 	-fx-hbar-policy: never;
+}
+
+#toolbar {
+	-fx-orientation: vertical;
+	-fx-alignment: top-center;
+	-fx-background-color: derive(BG-PRIMARY, -10%);
+	-fx-border-color: derive(BG-PRIMARY, 10%);
+	-fx-border-width: 3;
+	-fx-spacing: 4;
+	-fx-padding: 0 8 0 8;
+}
+
+#toolbar .tbb {
+	-fx-content-display: graphic-only;
+	-fx-pref-width: 16;
+	-fx-pref-height: 16;
+	-fx-background-color: transparent;
+	-fx-background-size: 16;
+	-fx-background-radius: 3;
+	-fx-background-position: center;
+	-fx-background-repeat: no-repeat;
+}
+
+#toolbar .tbb:hover,
+#toolbar .menu-button:showing {
+	-fx-background-color: derive(BG-PRIMARY, 20%);
+}
+
+#toolbar .tbb:armed {
+	-fx-opacity: 80%;
+}
+
+/* Make menu buttons look like a regular button:
+ * https://stackoverflow.com/a/30211975
+ */
+.menu-button > .arrow-button,
+.menu-button > .arrow-button > .arrow {
+	-fx-padding: 0;
+}
+
+#color-selector .label {
+	-fx-content-display: graphic-only;
+}
+
+/* "Disable" highlight on custom color menu item */
+#color-menu:focused {
+	-fx-background: white
+}
+
+#color-menu VBox {
+	-fx-spacing: 3;
+}
+
+#color-menu VBox .separator {
+	-fx-orientation: horizontal;
+	-fx-valignment: center;
+}
+
+#color-menu TilePane {
+	-fx-hgap: 3;
+	-fx-vgap: 3;
+}
+
+/* Color tiles are added in the controller, not the FXML file.
+ */
+#color-menu .color-tile {
+	-fx-stroke-type: inside;
+	-fx-stroke-width: 2;
+	-fx-arc-width: 10;
+	-fx-arc-height: 10;
+}
+/* See controller.
+ */
+#color-menu .color-tile:hover {
+	-fx-stroke: cyan;
 }
 
 #bottom-box * {

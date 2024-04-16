@@ -86,7 +86,8 @@ public interface ILife {
 	long populationCount();
 
 	/**
-	 * @return a set of all concrete classes that implement the {@link ILife} interface.
+	 * @return a set of all concrete classes in the {@link model} package that
+	 *         implement the {@link ILife} interface.
 	 */
 	static List<Class<? extends ILife>> implementations() {
 		var packageName = ILife.class.getPackageName();

@@ -1,0 +1,23 @@
+/* Style definitions for LifeView.fxml that refer to local resources. 
+ * 
+ * This stylesheet is meant to be used in conjunction with styles.css
+ * It is separated to allow the live style-editor to function. 
+ */
+
+@font-face {
+	src: url('../resources/fonts/Bungee-Regular.ttf');
+}
+
+/* placeholder icons */
+
+#toolbar .tbb {
+	-fx-background-image: url('../resources/icons/placeholder-tool-icon-2-freepik.png');
+}
+
+#toolbar #color-selector {
+	-fx-background-image: url('../resources/icons/colors-icon-cropped-freepik.png');
+}
+
+#toolbar #style-editor {
+	-fx-background-image: url('../resources/icons/brackets-icon-edt_im.png');	
+}

@@ -1,6 +1,7 @@
 package application;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
@@ -46,6 +47,8 @@ public class LifeApp extends Application {
 
 			stage.setTitle("Version 1.0");
 			stage.setScene(scene);
+			// Close any other windows if the main stage is closed.
+			stage.setOnHidden(e -> Platform.exit());
 			stage.show();
 		} catch (Exception e) {
 			e.printStackTrace();

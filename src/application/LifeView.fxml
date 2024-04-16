@@ -9,7 +9,7 @@
 <?import application.component.*?>
 
 <BorderPane id="app-root"
-	        stylesheets="@styles.css"
+	        stylesheets="@styles.css, @styles-resources.css"
 	        fx:controller="application.ViewController"
 	        fx:id="root"
 	        xmlns="http://javafx.com/javafx/21"
@@ -31,6 +31,93 @@
 			<Canvas fx:id="canvas" />
 		</ScrollPane>
 	</center>
+
+	<right>
+		<ToolBar id="toolbar" fx:id="toolbar">
+			<Button id="mode-selector"
+			        fx:id="modeSelectorButton"
+			        styleClass="tbb"
+			        text="Change mode"
+			        />
+
+			<Button id="zoom-tool"
+			        fx:id="zoomToolButton"
+			        styleClass="tbb"
+			        text="Zoom / Scale / Pan"
+			        />
+
+			<Button id="spawn-tool"
+			        fx:id="spawnToolButton"
+			        styleClass="tbb"
+			        text="Spawn tool"
+			        />
+
+			<Button id="smite-tool"
+			        fx:id="smiteToolButton"
+			        styleClass="tbb"
+			        text="Smite tool"
+			        />
+
+			<Button id="toggler"
+			        fx:id="togglerButton"
+			        styleClass="tbb"
+			        text="Toggle tool"
+			        />
+
+			<Button id="randomizer"
+			        fx:id="randomizerButton"
+			        styleClass="tbb"
+			        text="Randomizer"
+			        />
+
+			<Button id="stamper"
+			        fx:id="stamperButton"
+			        styleClass="tbb"
+			        text="Stamp tool"
+			        />
+
+			<Button id="selection-tool"
+			        fx:id="selectionTool"
+			        styleClass="tbb"
+			        text="Selection tool"
+			        />
+
+			<Button id="style-editor"
+			        fx:id="styleEditorButton"
+			        styleClass="tbb"
+			        text="Edit Style"
+			        />
+
+			<MenuButton id="color-selector" fx:id="colorSelectorButton" styleClass="tbb"
+			            popupSide="RIGHT"
+			            text="Select color"
+			            >
+				<items>
+					<CustomMenuItem id="color-menu" fx:id="colorMenu" hideOnClick="false">
+						<content>
+							<VBox>
+								<TilePane id="primary-palette-box"
+								          fx:id="primaryPaletteBox"
+								          styleClass="color-tile-box"
+								          >
+									<!-- Controller will populate with color tiles -->
+								</TilePane>
+
+								<Separator />
+
+								<TilePane id="extended-palette-box"
+								          fx:id="extendedPaletteBox"
+								          styleClass="color-tile-box"
+								          >
+									<!-- Controller will populate with color tiles -->
+								</TilePane>
+							</VBox>
+						</content>
+					</CustomMenuItem>
+				</items>
+			</MenuButton>
+		</ToolBar>
+	</right>
 
 	<bottom>
 		<VBox id="bottom-box" fx:id="bottomBox" BorderPane.alignment="CENTER">
@@ -58,7 +145,7 @@
 				<ComboBox id="model-cbox" fx:id="modelCBox">
 					<!-- Will be populated in the controller -->
 				</ComboBox>
-				
+
 				<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
 			</HBox>
 
@@ -83,7 +170,7 @@
 				           max="64"
 				           value="16"
 				           />
-			
+
 				<SliderBox fx:id="tpsControl"
 				           captionText="Ticks per second:"
 				           min="1"

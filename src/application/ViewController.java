@@ -1,7 +1,10 @@
 package application;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.SequencedMap;
 
 import application.component.SliderBox;
 import javafx.animation.AnimationTimer;
@@ -10,6 +13,7 @@ import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
@@ -19,12 +23,21 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.control.Control;
+import javafx.scene.control.Label;
+import javafx.scene.control.Labeled;
+import javafx.scene.control.Slider;
+import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import model.CellState;
@@ -39,8 +52,8 @@ import model.ILife;
  */
 public class ViewController {
 	/*
-	 * For convenience, we make a handle to each major component in the scene graph,
-	 * even though we might not currently use some of them.
+	 * For convenience, we hold a handle to each major component in the scene graph,
+	 * even though some are currently not used directly.
 	 *
 	 * Each @FXML annotated variable is injected from the FXML file by the
 	 * FXMLLoader using the 'fx:id' attributes of each element as the name for the
@@ -81,10 +94,71 @@ public class ViewController {
 	@FXML private SliderBox ncolsControl;
 	@FXML private SliderBox cellSizeControl;
 
+	// ==================
+	// Toolbar stuff
+	// ==================
+	@FXML private ToolBar toolbar;
+
+	// --- Color Menu stuff ---
+	@FXML private TilePane primaryPaletteBox;
+	@FXML private TilePane extendedPaletteBox;
+	private static final double COLOR_TILE_SIZE = 30;
+
+	// https://stackoverflow.com/a/4382138
+	private static final SequencedMap<String, Color> PRIMARY_PALETTE;
+	private static final SequencedMap<Color, String> KELLY_COLORS;
+
+	static {
+		var map = new LinkedHashMap<String, Color>();
+
+		map.put("Black", Color.BLACK);
+		map.put("Blue", Color.BLUE);
+		map.put("Red", Color.RED);
+		map.put("Green", Color.GREEN);
+		// normal yellow is a bit too bright on a white background
+		map.put("Yellow", Color.YELLOW.darker());
+		map.put("Magenta", Color.MAGENTA);
+		map.put("Pink", Color.DEEPPINK);
+		map.put("Gray", Color.GRAY);
+		map.put("Brown", Color.BROWN);
+		map.put("Orange", Color.ORANGE);
+
+		PRIMARY_PALETTE = Collections.unmodifiableSequencedMap(map);
+	}
+
+	static {
+		var map = new LinkedHashMap<Color, String>();
+
+		map.put(Color.web("#FFB300"), "Vivid Yellow");
+		map.put(Color.web("#803E75"), "Strong Purple");
+		map.put(Color.web("#FF6800"), "Vivid Orange");
+		map.put(Color.web("#A6BDD7"), "Very Light Blue");
+		map.put(Color.web("#C10020"), "Vivid Red");
+		map.put(Color.web("#CEA262"), "Grayish Yellow");
+		map.put(Color.web("#817066"), "Medium Gray");
+		map.put(Color.web("#007D34"), "Vivid Green");
+		map.put(Color.web("#F6768E"), "Strong Purplish Pink");
+		map.put(Color.web("#00538A"), "Strong Blue");
+		map.put(Color.web("#FF7A5C"), "Strong Yellowish Pink");
+		map.put(Color.web("#53377A"), "Strong Violet");
+		map.put(Color.web("#FF8E00"), "Vivid Orange Yellow");
+		map.put(Color.web("#B32851"), "Strong Purplish Red");
+		map.put(Color.web("#F4C800"), "Vivid Greenish Yellow");
+		map.put(Color.web("#7F180D"), "Strong Reddish Brown");
+		map.put(Color.web("#93AA00"), "Vivid Yellowish Green");
+		map.put(Color.web("#593315"), "Deep Yellowish Brown");
+		map.put(Color.web("#F13A13"), "Vivid Reddish Orange");
+		map.put(Color.web("#232C16"), "Dark Olive Green");
+
+		KELLY_COLORS = Collections.unmodifiableSequencedMap(map);
+	}
+
+	@FXML private Button styleEditorButton;
 
 	// ==================
 	// Grid/Canvas stuff
 	// ==================
+	private Color colorOfLife = Color.BLACK;
 
 	private double canvasWidth;
 	private double canvasHeight;
@@ -132,6 +206,80 @@ public class ViewController {
 				}
 			});
 		});
+
+		initToolBar();
+	}
+
+	private void initToolBar() {
+		for (var item : toolbar.getItems()) {
+			if (item instanceof Labeled labeled)
+				addTooltip(labeled, labeled.getText());
+
+			if (item instanceof Button button)
+				button.setOnAction(e -> {
+					debugText.setText("'" + button.getId() + "' not implemented yet!");
+				});
+
+		}
+
+		initColorMenu();
+		initLiveStyleEditor();
+	}
+
+	private void initLiveStyleEditor() {
+		var stylesheet = this.getClass().getResource("styles.css");
+		var editor = new LiveStyleEditor(root, stylesheet);
+
+		styleEditorButton.setOnAction(e -> {
+			boolean success = editor.launch();
+
+			if (!success) {
+				styleEditorButton.setDisable(true);
+				debugText.setText("Unable to launch style editor");
+			}
+		});
+	}
+
+	private void initColorMenu() {
+		for (var entry : PRIMARY_PALETTE.entrySet()) {
+			String name = entry.getKey();
+			Color color = entry.getValue();
+			primaryPaletteBox.getChildren().add(newColorTile(name, color, COLOR_TILE_SIZE));
+		}
+
+		for (var entry : KELLY_COLORS.entrySet()) {
+			Color color = entry.getKey();
+			String desc = entry.getValue();
+			extendedPaletteBox.getChildren().add(newColorTile(desc, color, COLOR_TILE_SIZE));
+		}
+	}
+
+	private void addTooltip(Node node, String text) {
+		var tip = new Tooltip(text);
+		// make tooltip show up faster (default delay is 1000ms)
+		tip.setShowDelay(javafx.util.Duration.millis(200));
+
+		if (node instanceof Control control)
+			control.setTooltip(tip);
+		else
+			Tooltip.install(node, tip);
+	}
+
+	private Node newColorTile(String descriptor, Color color, double size) {
+		var tile = new Rectangle(size, size, color);
+		tile.getStyleClass().add("color-tile");
+
+		tile.setOnMouseClicked(e -> {
+			if (colorOfLife.equals(color))
+				return;
+
+			debugText.setText("Changed color to: " + descriptor);
+			colorOfLife = color;
+			redrawGrid();
+		});
+
+		addTooltip(tile, descriptor);
+		return tile;
 	}
 
 	private void initGridSizeControls() {
@@ -458,7 +606,6 @@ public class ViewController {
 			g.strokeLine(0, y, canvasWidth, y);
 
 		// Fill in cells which are alive according to the model
-		g.setFill(Color.BLACK);
 		model.forAllLife((row, col, state) -> {
 			decideColor(g, state);
 
@@ -496,7 +643,7 @@ public class ViewController {
 
 		if (model.get(row, col) == CellState.DEAD) {
 			model.set(row, col, CellState.ALIVE);
-			g.setFill(Color.BLACK);
+			g.setFill(colorOfLife);
 			flavorText.setText("New life spontaneously emerges!");
 		}
 		else { // (model.get(row, col) != CellState.DEAD)
@@ -530,7 +677,7 @@ public class ViewController {
 					g.setFill(Color.rgb(79, 119, 45));
 				break;
 			case ALIVE:
-				g.setFill(Color.BLACK);
+				g.setFill(colorOfLife);
 				break;
 			default: // DEAD
 				g.setFill(Color.WHITE);
