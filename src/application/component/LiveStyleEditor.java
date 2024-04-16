@@ -1,7 +1,6 @@
-package application;
+package application.component;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,11 +10,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextFormatter;
+import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 
@@ -28,7 +23,7 @@ import javafx.stage.Modality;
  * to separate resource-based styles into a stylesheet separate from the
  * one being edited.
  */
-class LiveStyleEditor {
+public class LiveStyleEditor {
 	private final Parent target;
 	private final URL stylesheet;
 	private Path tempfile;
@@ -41,7 +36,7 @@ class LiveStyleEditor {
 	 * @param target - the UI component whose style is to be edited
 	 * @param stylesheet - the location of the the stylesheet
 	 */
-	LiveStyleEditor(Parent target, URL stylesheet) {
+	public LiveStyleEditor(Parent target, URL stylesheet) {
 		this.target = Objects.requireNonNull(target, "null target");
 		this.stylesheet = Objects.requireNonNull(stylesheet, "null stylesheet");
 
@@ -96,7 +91,7 @@ class LiveStyleEditor {
 	 * @return {@code true} if successful or already launched,
 	 *         {@code false} if stylesheet could not be loaded.
 	 */
-	boolean launch() {
+	public boolean launch() {
 		if (dialog.isShowing()) {
 			Platform.runLater(() -> editor.requestFocus());
 			return true;
@@ -153,10 +148,10 @@ class LiveStyleEditor {
 		if (file == null)
 			return null;
 
-		try {
-			return maybeReadFile(Path.of(file.toURI()));
+		try (var stream = file.openStream()){
+			return new String(stream.readAllBytes());
 		}
-		catch (URISyntaxException e) {
+		catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}

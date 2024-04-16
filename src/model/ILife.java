@@ -1,9 +1,6 @@
 package model;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Objects;
@@ -91,10 +88,12 @@ public interface ILife {
 	 */
 	static List<Class<? extends ILife>> implementations() {
 		var packageName = ILife.class.getPackageName();
-		var directory = packageName.replaceAll("\\.", "/");
 
+		// TODO: Base class loader can't locate "directories" in a jar file,
+		// so this will fail when run as jar. Replace with a manual listing
+		// of all the implementation classes.
 		try (
-			var stream = ILife.class.getClassLoader().getResourceAsStream(directory);
+			var stream = ILife.class.getResourceAsStream(".");
 			var reader = new BufferedReader(new InputStreamReader(stream))) {
 			var fileExt = ".class";
 			return reader.lines()
