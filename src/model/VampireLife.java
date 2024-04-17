@@ -105,6 +105,7 @@ public class VampireLife implements ILife {
 	@Override
 	public void clear() {
 		Arrays.fill(cells, CellState.DEAD);
+		vampireTargets = new int[nrows * ncols][2];
 	}
 
 	@Override

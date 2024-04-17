@@ -105,6 +105,7 @@ public class ZombieLife implements ILife {
 	@Override
 	public void clear() {
 		Arrays.fill(cells, CellState.DEAD);
+		zombieTargets = new int[nrows * ncols][2];
 	}
 
 	@Override
