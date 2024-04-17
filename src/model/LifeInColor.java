@@ -104,9 +104,9 @@ public class LifeInColor implements ILife {
 			else
 				cells[current] = randomSpecies();
 	}
-	
+
 	/**
-	 * @return random species CellState (between RED, BLUE, and YELLOW).
+	 * @return random species CellState (between RED, BLUE, and GREEN).
 	 */
 	private CellState randomSpecies() {
 		int randomInt = RANDOM.nextInt(3);
@@ -135,7 +135,7 @@ public class LifeInColor implements ILife {
 		// Calculate needed updates
 		for (int current = 0; current < cells.length; current++) {
 			CellState species = cells[current];
-			
+
 			// If dead cell, set species
 			if (species == CellState.DEAD) {
 				for (int neighbor : world.adj(current))
@@ -144,7 +144,7 @@ public class LifeInColor implements ILife {
 				if (species == CellState.DEAD) // If still dead, set as random species.
 					species = randomSpecies();
 			}
-			
+
 			// Count amount of alive neighbors
 			int aliveNeighbors = 0;
 			for (int neighbor : world.adj(current))
