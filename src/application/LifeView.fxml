@@ -88,34 +88,12 @@
 			        text="Edit Style"
 			        />
 
-			<MenuButton id="color-selector" fx:id="colorSelectorButton" styleClass="tbb"
-			            popupSide="RIGHT"
-			            text="Select color"
-			            >
-				<items>
-					<CustomMenuItem id="color-menu" fx:id="colorMenu" hideOnClick="false">
-						<content>
-							<VBox>
-								<TilePane id="primary-palette-box"
-								          fx:id="primaryPaletteBox"
-								          styleClass="color-tile-box"
-								          >
-									<!-- Controller will populate with color tiles -->
-								</TilePane>
-
-								<Separator />
-
-								<TilePane id="extended-palette-box"
-								          fx:id="extendedPaletteBox"
-								          styleClass="color-tile-box"
-								          >
-									<!-- Controller will populate with color tiles -->
-								</TilePane>
-							</VBox>
-						</content>
-					</CustomMenuItem>
-				</items>
-			</MenuButton>
+			<ConstrainedColorPicker id="color-picker"
+			                        fx:id="colorPicker" 
+			                        styleClass="tbb"
+			                        popupSide="RIGHT"
+			                        text="Select color" 
+			                        />
 		</ToolBar>
 	</right>
 

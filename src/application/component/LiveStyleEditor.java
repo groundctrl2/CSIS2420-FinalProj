@@ -60,6 +60,8 @@ public class LiveStyleEditor {
 		// Set dialog content to (wrapped) editor
 		var pane = dialog.getDialogPane();
 		pane.setContent(wrapper);
+		pane.getStyleClass().add("style-editor");
+		applyComponentStyles(pane);
 
 		// Add 'apply' button and set handler
 		pane.getButtonTypes().add(ButtonType.APPLY);
@@ -82,7 +84,6 @@ public class LiveStyleEditor {
 
 			return change;
 		}));
-
 	}
 
 	/**
@@ -182,5 +183,11 @@ public class LiveStyleEditor {
 		catch (IOException ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	private void applyComponentStyles(Parent node) {
+		var stylesheet = this.getClass().getResource("component-styles.css");
+		assert stylesheet != null;
+		node.getStylesheets().add(stylesheet.toString());
 	}
 }

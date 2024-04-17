@@ -1,8 +1,9 @@
 package application;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
 
+import application.component.ConstrainedColorPicker;
 import application.component.LiveStyleEditor;
 import application.component.SliderBox;
 import javafx.animation.AnimationTimer;
@@ -16,10 +17,11 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import model.CellState;
@@ -80,61 +82,7 @@ public class ViewController {
 	// Toolbar stuff
 	// ==================
 	@FXML private ToolBar toolbar;
-
-	// --- Color Menu stuff ---
-	@FXML private TilePane primaryPaletteBox;
-	@FXML private TilePane extendedPaletteBox;
-	private static final double COLOR_TILE_SIZE = 30;
-
-	// https://stackoverflow.com/a/4382138
-	private static final SequencedMap<String, Color> PRIMARY_PALETTE;
-	private static final SequencedMap<Color, String> KELLY_COLORS;
-
-	static {
-		var map = new LinkedHashMap<String, Color>();
-
-		map.put("Black", Color.BLACK);
-		map.put("Blue", Color.BLUE);
-		map.put("Red", Color.RED);
-		map.put("Green", Color.GREEN);
-		// normal yellow is a bit too bright on a white background
-		map.put("Yellow", Color.YELLOW.darker());
-		map.put("Magenta", Color.MAGENTA);
-		map.put("Pink", Color.DEEPPINK);
-		map.put("Gray", Color.GRAY);
-		map.put("Brown", Color.BROWN);
-		map.put("Orange", Color.ORANGE);
-
-		PRIMARY_PALETTE = Collections.unmodifiableSequencedMap(map);
-	}
-
-	static {
-		var map = new LinkedHashMap<Color, String>();
-
-		map.put(Color.web("#FFB300"), "Vivid Yellow");
-		map.put(Color.web("#803E75"), "Strong Purple");
-		map.put(Color.web("#FF6800"), "Vivid Orange");
-		map.put(Color.web("#A6BDD7"), "Very Light Blue");
-		map.put(Color.web("#C10020"), "Vivid Red");
-		map.put(Color.web("#CEA262"), "Grayish Yellow");
-		map.put(Color.web("#817066"), "Medium Gray");
-		map.put(Color.web("#007D34"), "Vivid Green");
-		map.put(Color.web("#F6768E"), "Strong Purplish Pink");
-		map.put(Color.web("#00538A"), "Strong Blue");
-		map.put(Color.web("#FF7A5C"), "Strong Yellowish Pink");
-		map.put(Color.web("#53377A"), "Strong Violet");
-		map.put(Color.web("#FF8E00"), "Vivid Orange Yellow");
-		map.put(Color.web("#B32851"), "Strong Purplish Red");
-		map.put(Color.web("#F4C800"), "Vivid Greenish Yellow");
-		map.put(Color.web("#7F180D"), "Strong Reddish Brown");
-		map.put(Color.web("#93AA00"), "Vivid Yellowish Green");
-		map.put(Color.web("#593315"), "Deep Yellowish Brown");
-		map.put(Color.web("#F13A13"), "Vivid Reddish Orange");
-		map.put(Color.web("#232C16"), "Dark Olive Green");
-
-		KELLY_COLORS = Collections.unmodifiableSequencedMap(map);
-	}
-
+	@FXML private ConstrainedColorPicker colorPicker;
 	@FXML private Button styleEditorButton;
 
 	// ==================
@@ -223,17 +171,13 @@ public class ViewController {
 	}
 
 	private void initColorMenu() {
-		for (var entry : PRIMARY_PALETTE.entrySet()) {
-			String name = entry.getKey();
-			Color color = entry.getValue();
-			primaryPaletteBox.getChildren().add(newColorTile(name, color, COLOR_TILE_SIZE));
-		}
+		colorPicker.setOnPick(color -> {
+			if (colorOfLife.equals(color))
+				return;
 
-		for (var entry : KELLY_COLORS.entrySet()) {
-			Color color = entry.getKey();
-			String desc = entry.getValue();
-			extendedPaletteBox.getChildren().add(newColorTile(desc, color, COLOR_TILE_SIZE));
-		}
+			colorOfLife = color;
+			redrawGrid();
+		});
 	}
 
 	private void addTooltip(Node node, String text) {
@@ -245,23 +189,6 @@ public class ViewController {
 			control.setTooltip(tip);
 		else
 			Tooltip.install(node, tip);
-	}
-
-	private Node newColorTile(String descriptor, Color color, double size) {
-		var tile = new Rectangle(size, size, color);
-		tile.getStyleClass().add("color-tile");
-
-		tile.setOnMouseClicked(e -> {
-			if (colorOfLife.equals(color))
-				return;
-
-			debugText.setText("Changed color to: " + descriptor);
-			colorOfLife = color;
-			redrawGrid();
-		});
-
-		addTooltip(tile, descriptor);
-		return tile;
 	}
 
 	private void initGridSizeControls() {

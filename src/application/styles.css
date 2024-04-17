@@ -144,46 +144,9 @@
 /* Make menu buttons look like a regular button:
  * https://stackoverflow.com/a/30211975
  */
-.menu-button > .arrow-button,
-.menu-button > .arrow-button > .arrow {
+#toolbar .menu-button > .arrow-button,
+#toolbar .menu-button > .arrow-button > .arrow {
 	-fx-padding: 0;
-}
-
-#color-selector .label {
-	-fx-content-display: graphic-only;
-}
-
-/* "Disable" highlight on custom color menu item */
-#color-menu:focused {
-	-fx-background: white
-}
-
-#color-menu VBox {
-	-fx-spacing: 3;
-}
-
-#color-menu VBox .separator {
-	-fx-orientation: horizontal;
-	-fx-valignment: center;
-}
-
-#color-menu TilePane {
-	-fx-hgap: 3;
-	-fx-vgap: 3;
-}
-
-/* Color tiles are added in the controller, not the FXML file.
- */
-#color-menu .color-tile {
-	-fx-stroke-type: inside;
-	-fx-stroke-width: 2;
-	-fx-arc-width: 10;
-	-fx-arc-height: 10;
-}
-/* See controller.
- */
-#color-menu .color-tile:hover {
-	-fx-stroke: cyan;
 }
 
 #bottom-box * {
