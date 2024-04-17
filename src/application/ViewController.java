@@ -154,7 +154,7 @@ public class ViewController {
 	private static final int CELL_BORDER_WIDTH = 1;
 
 	// handle for the implementation of the simulation itself
-	private ILife model = new model.VampireLife();
+	private ILife model = new model.LifeInColor();
 
 	// ================
 	// Animation stuff
@@ -646,17 +646,23 @@ public class ViewController {
 	 */
 	private void decideColor(GraphicsContext g, CellState state) {
 		switch(state) {
+			case MERMAID:
+				if (ILife.RANDOM.nextBoolean())
+					g.setFill(Color.rgb(87, 111, 141));
+				else
+					g.setFill(Color.rgb(87, 141, 161));
+				break;
 			case VAMPIRE:
 				if (ILife.RANDOM.nextBoolean())
-					g.setFill(Color.rgb(97, 22, 24));
+					g.setFill(Color.rgb(180, 0, 0));
 				else
-					g.setFill(Color.rgb(130, 20, 21));
+					g.setFill(Color.rgb(210, 0, 0));
 				break;
 			case ZOMBIE:
 				if (ILife.RANDOM.nextBoolean())
-					g.setFill(Color.rgb(49, 87, 44));
+					g.setFill(Color.rgb(80, 130, 0));
 				else
-					g.setFill(Color.rgb(79, 119, 45));
+					g.setFill(Color.rgb(80, 160, 0));
 				break;
 			case ALIVE:
 				g.setFill(colorOfLife);
