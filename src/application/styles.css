@@ -16,8 +16,8 @@
 	BUTTON-TEXT-COLOR: black;
 	BORDER-COLOR: black;
 	BORDER-FOCUSED: darkslateblue;
-	HIGHLIGHT-PRIMARY: turquoise;
-	HIGHLIGHT-DANGER: hotpink;
+	HIGHLIGHT-PRIMARY: #50A000;
+	HIGHLIGHT-DANGER: #D20000;
 	
 	-fx-font-size: 14;
 }

@@ -10,16 +10,9 @@ import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Shape;
@@ -95,7 +88,7 @@ public class ViewController {
 	private int nrows;
 
 	// handle for the implementation of the simulation itself
-	private ILife model = new model.VampireLife();
+	private ILife model = new model.LifeInColor();
 
 	// ================
 	// Animation stuff
@@ -495,17 +488,23 @@ public class ViewController {
 	 */
 	private void decideColor(GraphicsContext g, CellState state) {
 		switch(state) {
+			case MERMAID:
+				if (ILife.RANDOM.nextBoolean())
+					g.setFill(Color.rgb(87, 111, 141));
+				else
+					g.setFill(Color.rgb(87, 141, 161));
+				break;
 			case VAMPIRE:
 				if (ILife.RANDOM.nextBoolean())
-					g.setFill(Color.rgb(97, 22, 24));
+					g.setFill(Color.rgb(180, 0, 0));
 				else
-					g.setFill(Color.rgb(130, 20, 21));
+					g.setFill(Color.rgb(210, 0, 0));
 				break;
 			case ZOMBIE:
 				if (ILife.RANDOM.nextBoolean())
-					g.setFill(Color.rgb(49, 87, 44));
+					g.setFill(Color.rgb(80, 130, 0));
 				else
-					g.setFill(Color.rgb(79, 119, 45));
+					g.setFill(Color.rgb(80, 160, 0));
 				break;
 			case ALIVE:
 				g.setFill(Color.BLACK);
