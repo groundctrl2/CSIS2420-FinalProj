@@ -15,7 +15,9 @@ import javafx.scene.shape.Rectangle;
  * A menu button that allows the user to select from a limited set of
  * distinct colors. Unlike {@link javafx.scene.control.ColorPicker},
  * this is more limited, less customizable, and does not allow the user
- * to choose their own color.
+ * to choose their own color. On the other hand, {@code ColorPicker}
+ * currently does not expose an API for customizing its predefined palette,
+ * which is a possibility here.
  * <p>
  * Designed to be instantiated in FXML with its constituent components
  * accessible to a controller.

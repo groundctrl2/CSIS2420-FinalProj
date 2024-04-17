@@ -10,11 +10,11 @@
 
 /* placeholder icons */
 
-#toolbar .tbb {
+#toolbar .tbb-placeholder {
 	-fx-background-image: url('../resources/icons/placeholder-tool-icon-2-freepik.png');
 }
 
-#toolbar #color-picker {
+#toolbar .constrained-color-picker {
 	-fx-background-image: url('../resources/icons/colors-icon-cropped-freepik.png');
 }
 

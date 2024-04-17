@@ -3,7 +3,6 @@ package application;
 import java.time.Duration;
 import java.util.HashMap;
 
-import application.component.ConstrainedColorPicker;
 import application.component.LiveStyleEditor;
 import application.component.SliderBox;
 import javafx.animation.AnimationTimer;
@@ -82,7 +81,7 @@ public class ViewController {
 	// Toolbar stuff
 	// ==================
 	@FXML private ToolBar toolbar;
-	@FXML private ConstrainedColorPicker colorPicker;
+	@FXML private ColorPicker colorPicker;
 	@FXML private Button styleEditorButton;
 
 	// ==================
@@ -171,13 +170,20 @@ public class ViewController {
 	}
 
 	private void initColorMenu() {
-		colorPicker.setOnPick(color -> {
+		// initial value
+		colorPicker.setValue(colorOfLife != null ? colorOfLife : Color.BLACK);
+
+		// update canvas color on color selection
+		colorPicker.setOnAction(e -> {
+			var color = colorPicker.getValue();
+
 			if (colorOfLife.equals(color))
 				return;
 
 			colorOfLife = color;
 			redrawGrid();
 		});
+
 	}
 
 	private void addTooltip(Node node, String text) {

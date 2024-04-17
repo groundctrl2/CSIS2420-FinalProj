@@ -4,6 +4,7 @@
 <?import javafx.scene.canvas.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
 <?import application.component.*?>
@@ -36,49 +37,49 @@
 		<ToolBar id="toolbar" fx:id="toolbar">
 			<Button id="mode-selector"
 			        fx:id="modeSelectorButton"
-			        styleClass="tbb"
+			        styleClass="tbb, tbb-placeholder"
 			        text="Change mode"
 			        />
 
 			<Button id="zoom-tool"
 			        fx:id="zoomToolButton"
-			        styleClass="tbb"
+			        styleClass="tbb, tbb-placeholder"
 			        text="Zoom / Scale / Pan"
 			        />
 
 			<Button id="spawn-tool"
 			        fx:id="spawnToolButton"
-			        styleClass="tbb"
+			        styleClass="tbb, tbb-placeholder"
 			        text="Spawn tool"
 			        />
 
 			<Button id="smite-tool"
 			        fx:id="smiteToolButton"
-			        styleClass="tbb"
+			        styleClass="tbb, tbb-placeholder"
 			        text="Smite tool"
 			        />
 
 			<Button id="toggler"
 			        fx:id="togglerButton"
-			        styleClass="tbb"
+			        styleClass="tbb, tbb-placeholder"
 			        text="Toggle tool"
 			        />
 
 			<Button id="randomizer"
 			        fx:id="randomizerButton"
-			        styleClass="tbb"
+			        styleClass="tbb, tbb-placeholder"
 			        text="Randomizer"
 			        />
 
 			<Button id="stamper"
 			        fx:id="stamperButton"
-			        styleClass="tbb"
+			        styleClass="tbb, tbb-placeholder"
 			        text="Stamp tool"
 			        />
 
 			<Button id="selection-tool"
 			        fx:id="selectionTool"
-			        styleClass="tbb"
+			        styleClass="tbb, tbb-placeholder"
 			        text="Selection tool"
 			        />
 
@@ -88,12 +89,19 @@
 			        text="Edit Style"
 			        />
 
+			<!-- Use FX Color Picker instead?
 			<ConstrainedColorPicker id="color-picker"
 			                        fx:id="colorPicker" 
 			                        styleClass="tbb"
 			                        popupSide="RIGHT"
 			                        text="Select color" 
 			                        />
+			-->
+			
+			<ColorPicker id="color-picker"
+			             fx:id="colorPicker"
+			             styleClass="tbb"
+			             />
 		</ToolBar>
 	</right>
 

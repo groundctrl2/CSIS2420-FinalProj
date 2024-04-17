@@ -145,8 +145,28 @@
  * https://stackoverflow.com/a/30211975
  */
 #toolbar .menu-button > .arrow-button,
-#toolbar .menu-button > .arrow-button > .arrow {
+#toolbar .menu-button > .arrow-button > .arrow,
+#toolbar .color-picker > .arrow-button,
+#toolbar .color-picker > .arrow-button > .arrow {
 	-fx-padding: 0;
+}
+
+#toolbar .color-picker {
+	/* Not sure why, but color-picker size doesn't line up with the rest of 
+	 * the toolbar items without fiddling with the padding. 
+	 */
+	-fx-padding: 14;
+}
+
+#toolbar .color-picker-label {
+	-fx-content-display: graphic-only;
+	-fx-alignment: center;
+}
+
+/* undocumented substructures */
+#toolbar .color-picker .picker-color-rect {
+	-fx-scale-x: 1.3;
+	-fx-scale-y: 1.3;
 }
 
 #bottom-box * {
