@@ -133,14 +133,14 @@
 				            label="nrows:"
 				            min="3"
 				            max="400"
-				            value="60"
+				            value="32"
 				            />
 
 				<SpinnerBox fx:id="ncolsControl"
 				            label="ncols:"
 				            min="3"
 				            max="500"
-				            value="80"
+				            value="70"
 				            />
 
 				<ComboBox id="grid-dimensions-cbox" fx:id="gridDimensionsComboBox">
