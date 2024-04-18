@@ -1,21 +1,22 @@
 package application;
 
+import static javafx.scene.input.KeyCombination.keyCombination;
+
 import java.time.Duration;
 import java.util.HashMap;
 
 import application.component.LiveStyleEditor;
-import application.component.SliderBox;
+import application.component.SpinnerBox;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.input.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -62,20 +63,23 @@ public class ViewController {
 
 	// bottom stuff
 	@FXML private VBox bottomBox;
-	@FXML private Text flavorText;
-	@FXML private HBox buttonGroup;
+	@FXML private HBox mainControlBar;
 	@FXML private Button clearButton;
 	@FXML private Button randomButton;
 	@FXML private Button pausePlayButton;
 	@FXML private Button stepButton;
 	@FXML private Text debugText;
-	@FXML private SliderBox tpsControl;
+
+	@FXML private HBox secondaryControls;
+	@FXML private SpinnerBox tpsControl;
 	@FXML private ComboBox<String> modelCBox;
 
 	// tentative
-	@FXML private SliderBox nrowsControl;
-	@FXML private SliderBox ncolsControl;
-	@FXML private SliderBox cellSizeControl;
+	@FXML private SpinnerBox nrowsControl;
+	@FXML private SpinnerBox ncolsControl;
+	@FXML private SpinnerBox cellSizeControl;
+
+	@FXML private ComboBox<String> gridDimensionsComboBox;
 
 	// ==================
 	// Toolbar stuff
@@ -116,43 +120,79 @@ public class ViewController {
 	 * Performs post-processing of the scene graph after loading it from the FXML.
 	 */
 	public void initialize() {
-		debugText.setText("cell size: " + cellSize);
 		initCanvasGrid();
 		initButtonHandlers();
 		initTpsControls();
 		initModelSelectorBox();
 		initGridSizeControls();
+		initToolBar();
 
-		Platform.runLater(() -> {
-			var scene = root.getScene();
+		// The scene isn't set until after initialization, so run later.
+		Platform.runLater(this::installHotkeys);
+	}
 
-			var originShortcut = new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN);
-			scene.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-				if (originShortcut.match(e)) {
-					debugText.setText("Return to origin");
-					centerPane.setHvalue(0.5);
-					centerPane.setVvalue(0.5);
-				}
-			});
+	private void installHotkeys() {
+		var acc = root.getScene().getAccelerators();
+
+		acc.put(keyCombination("Shortcut+P"), pausePlayButton::requestFocus);
+		acc.put(keyCombination("P"), pausePlayButton::fire);
+		acc.put(keyCombination("PLAY"), pausePlayButton::fire);
+		acc.put(keyCombination("PAUSE"), pausePlayButton::fire);
+		// acc.put(keyCombination("Shift+Comma"), backButton::fire);  // '<'
+		// acc.put(keyCombination("b"), backButton::fire);
+		acc.put(keyCombination("Shift+Period"), stepButton::fire);  // '>'
+		acc.put(keyCombination("F"), stepButton::fire);
+		acc.put(keyCombination("Shift+C"), clearButton::fire);
+		acc.put(keyCombination("Shift+R"), randomButton::fire);
+
+		acc.put(keyCombination("Close Bracket"), () -> {  // ']'
+			tpsControl.setValue(ticksPerSecond + 1);
 		});
 
-		initToolBar();
+		acc.put(keyCombination("Open Bracket"), () -> {  // '['
+			tpsControl.setValue(ticksPerSecond - 1);
+		});
+
+		acc.put(keyCombination("Ignore Shortcut+Equals"), () -> {
+			cellSizeControl.setValue(cellSize + 1);
+		});
+
+		acc.put(keyCombination("Ignore Shortcut+Minus"), () -> {
+			cellSizeControl.setValue(cellSize - 1);
+		});
+
+		acc.put(keyCombination("Shortcut+o"), () -> {
+			debugText.setText("Return to origin");
+			recenterGrid();
+		});
+
+		acc.put(keyCombination("Shortcut+t"), () -> {
+			toolbar.setManaged(!toolbar.isManaged());
+			toolbar.setVisible(!toolbar.isVisible());
+		});
 	}
 
 	private void initToolBar() {
 		for (var item : toolbar.getItems()) {
-			if (item instanceof Labeled labeled)
-				addTooltip(labeled, labeled.getText());
+			if (item instanceof Labeled labeled) {
+				var tip = new Tooltip(labeled.getText());
+				tip.setShowDelay(javafx.util.Duration.millis(200));
+				labeled.setTooltip(tip);
+			}
 
-			if (item instanceof Button button)
+			if (item instanceof Button button) {
 				button.setOnAction(e -> {
 					debugText.setText("'" + button.getId() + "' not implemented yet!");
 				});
-
+			}
 		}
 
 		initColorMenu();
 		initLiveStyleEditor();
+
+		// Hide toolbar while it's unfinished.
+		toolbar.setVisible(false);
+		toolbar.setManaged(false);
 	}
 
 	private void initLiveStyleEditor() {
@@ -185,52 +225,51 @@ public class ViewController {
 		});
 
 	}
-
-	private void addTooltip(Node node, String text) {
-		var tip = new Tooltip(text);
-		// make tooltip show up faster (default delay is 1000ms)
-		tip.setShowDelay(javafx.util.Duration.millis(200));
-
-		if (node instanceof Control control)
-			control.setTooltip(tip);
-		else
-			Tooltip.install(node, tip);
-	}
-
 	private void initGridSizeControls() {
-		ncolsControl.slider.valueProperty().addListener((ov, oldValue, newValue) -> {
-			ncols = newValue.intValue();
+		ncolsControl.setOnAction(newValue -> {
+			ncols = newValue;
+			gridDimensionsComboBox.setValue(nrows + "x" + ncols);
 			resizeGrid();
 		});
 
-		nrowsControl.slider.valueProperty().addListener((ov, oldValue, newValue) -> {
-			nrows = newValue.intValue();
+		nrowsControl.setOnAction(newValue -> {
+			nrows = newValue;
+			gridDimensionsComboBox.setValue(nrows + "x" + ncols);
 			resizeGrid();
 		});
 
-		cellSizeControl.slider.valueProperty().addListener((ov, oldValue, newValue) -> {
-			cellSize = newValue.intValue();
+		cellSizeControl.setOnAction(newValue -> {
+			cellSize = newValue;
 			cellInteriorSize = cellSize - 2*CELL_BORDER_WIDTH;
 			resizeGrid();
 		});
 
-		ncols = ncolsControl.getValue();
-		nrows = nrowsControl.getValue();
-		cellSize = cellSizeControl.getValue();
+		ncols = ncolsControl.spinner.getValue();
+		nrows = nrowsControl.spinner.getValue();
+		cellSize = cellSizeControl.spinner.getValue();
 		cellInteriorSize = cellSize - 2*CELL_BORDER_WIDTH;
+
+		gridDimensionsComboBox.setValue(nrows + "x" + ncols);
+		gridDimensionsComboBox.setOnAction(e -> {
+			String dimensions = gridDimensionsComboBox.getValue();
+			var a = dimensions.split("x");
+			nrows = Integer.valueOf(a[0]);
+			ncols = Integer.valueOf(a[1]);
+			nrowsControl.setValue(nrows);
+			ncolsControl.setValue(ncols);
+			resizeGrid();
+		});
+
 		resizeGrid();
 	}
 
 	private void initTpsControls() {
-		tpsControl.slider.valueProperty().addListener((ov, oldValue, newValue) -> {
-			ticksPerSecond = newValue.intValue();
-
-			if (isPlaying && ticksPerSecond > 30)
-				flavorText.setText("Chaos!");
+		tpsControl.setOnAction(newValue -> {
+			ticksPerSecond = newValue;
 		});
 
 		// See FXML for initial value.
-		ticksPerSecond = tpsControl.getValue();
+		ticksPerSecond = tpsControl.spinner.getValue();
 	}
 
 	private void initModelSelectorBox() {
@@ -321,7 +360,6 @@ public class ViewController {
 			if (isPlaying)
 				pausePlayButton.fire();
 
-			flavorText.setText("The slate has been wiped clean");
 			model.clear();
 			redrawGrid();
 			stepCount = 0;
@@ -329,7 +367,6 @@ public class ViewController {
 		});
 
 		randomButton.setOnAction(event -> {
-			flavorText.setText("Chaos!");
 			model.randomize();
 			redrawGrid();
 			stepCount = 0;
@@ -348,7 +385,6 @@ public class ViewController {
 				stepButton.setDisable(true);
 			}
 
-			flavorText.setText("...");
 			isPlaying = !isPlaying;
 		});
 
@@ -364,7 +400,6 @@ public class ViewController {
 		if (restart) {
 			stepCount = 0;
 			restart = false;
-			flavorText.setText("Another round.");
 		}
 
 		if (change)
@@ -377,20 +412,10 @@ public class ViewController {
 			// Reset the step count next time.
 			restart = true;
 
-			if (stepCount > 0) {
-				if (model.populationCount() > 0) {
-					flavorText.setText("Life prevails.");
-
-					if (model instanceof model.VampireLife)
-						temporarilySetFill(flavorText, Color.DARKRED, flavorText.textProperty());
-				}
-				else {
-					flavorText.setText("In the end, death claims all.");
-				}
-			}
+			// TODO: detect cycles and react accordingly
+			if (stepCount > 0)
+				debugText.setText("No more changes after " + stepCount + " steps");
 		}
-
-		// TODO: detect cycles and react accordingly
 
 		debugText.setText("Step count: " + stepCount);
 	}
@@ -477,7 +502,13 @@ public class ViewController {
 	private void resizeGrid() {
 		canvas.setWidth(canvasWidth = ncols * cellSize);
 		canvas.setHeight(canvasHeight = nrows * cellSize);
+		recenterGrid();
 		resizeModel();
+	}
+
+	private void recenterGrid() {
+		centerPane.setHvalue(0.5);
+		centerPane.setVvalue(0.5);
 	}
 
 	private void resizeModel() {
@@ -490,7 +521,6 @@ public class ViewController {
 		assert !isPlaying;
 		timestamp = 0;
 		stepCount = 0;
-		flavorText.setText("In the beginning, there was nothing...");
 
 		redrawGrid();
 	}
@@ -559,12 +589,10 @@ public class ViewController {
 		if (model.get(row, col) == CellState.DEAD) {
 			model.set(row, col, CellState.ALIVE);
 			g.setFill(colorOfLife);
-			flavorText.setText("New life spontaneously emerges!");
 		}
 		else { // (model.get(row, col) != CellState.DEAD)
 			model.set(row,  col, CellState.DEAD);
 			g.setFill(Color.WHITE);
-			flavorText.setText("The hand of God is cruel.");
 		}
 
 		g.fillRect(x0, y0, cellInteriorSize, cellInteriorSize);

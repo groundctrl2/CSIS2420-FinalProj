@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+
+<?import javafx.collections.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.canvas.*?>
 <?import javafx.scene.control.*?>
@@ -34,6 +37,7 @@
 	</center>
 
 	<right>
+	<StackPane>
 		<ToolBar id="toolbar" fx:id="toolbar">
 			<Button id="mode-selector"
 			        fx:id="modeSelectorButton"
@@ -103,66 +107,72 @@
 			             styleClass="tbb"
 			             />
 		</ToolBar>
+		</StackPane>
 	</right>
 
 	<bottom>
 		<VBox id="bottom-box" fx:id="bottomBox" BorderPane.alignment="CENTER">
-			<HBox id="flavor-text-group" fx:id="flavorTextGroup">
-				<Text id="flavor-text" fx:id="flavorText" styleClass="app-text"
-				     text="In the beginning, there was nothing..."
-				     />
-			</HBox>
-
-			<HBox id="button-group" fx:id="buttonGroup">
+			<HBox id="main-control-bar" fx:id="mainControlBar">
 				<Button id="clear-button"      fx:id="clearButton"     styleClass="cancel-button" text="CLEAR" />
 				<Button id="random-button"     fx:id="randomButton"    styleClass="cancel-button" text="RANDOM" />
 				<Button id="pause-play-button" fx:id="pausePlayButton" styleClass="app-button" text="PLAY" />
 				<Button id="step-button"       fx:id="stepButton"      styleClass="app-button" text="STEP" />
 			</HBox>
 
-			<HBox id="misc-group" fx:id="miscGroup">
+			<HBox id="secondary-controls" fx:id="secondaryControls">
 				<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
 
+				<SpinnerBox fx:id="cellSizeControl"
+				            label="cell size:"
+				            min="2"
+				            max="64"
+				            value="16"
+				            />
+
+				<SpinnerBox fx:id="nrowsControl"
+				            label="nrows:"
+				            min="3"
+				            max="400"
+				            value="60"
+				            />
+
+				<SpinnerBox fx:id="ncolsControl"
+				            label="ncols:"
+				            min="3"
+				            max="500"
+				            value="80"
+				            />
+
+				<ComboBox id="grid-dimensions-cbox" fx:id="gridDimensionsComboBox">
+					<items>
+						<FXCollections fx:factory="observableArrayList">
+							<String fx:value="10x20" />
+							<String fx:value="25x50" />
+							<String fx:value="50x100" />
+							<String fx:value="80x120" />
+						</FXCollections>
+					</items>
+				</ComboBox>
+				
+				<SpinnerBox fx:id="tpsControl"
+				            label="Ticks per second:"
+				            min="1"
+				            max="60"
+				            value="2"
+				            />
+			
+				<ComboBox id="model-cbox" fx:id="modelCBox">
+					<!-- Will be populated in the controller -->
+				</ComboBox>
+				
+				<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
+			</HBox>
+
+			<HBox id="debug-group" fx:id="debugGroup">
 				<Text id="debug-text" fx:id="debugText"
 				      text="Nothing to report"
 				      BorderPane.alignment="CENTER_LEFT"
 				      />
-
-				<ComboBox id="model-cbox" fx:id="modelCBox">
-					<!-- Will be populated in the controller -->
-				</ComboBox>
-
-				<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
-			</HBox>
-
-			<HBox id="size-controls">
-				<SliderBox fx:id="ncolsControl"
-				           captionText="ncols:"
-				           min="3"
-				           max="500"
-				           value="80"
-				           />
-
-				<SliderBox fx:id="nrowsControl"
-				           captionText="nrows:"
-				           min="3"
-				           max="400"
-				           value="60"
-				           />
-
-				<SliderBox fx:id="cellSizeControl"
-				           captionText="cell size:"
-				           min="2"
-				           max="64"
-				           value="16"
-				           />
-
-				<SliderBox fx:id="tpsControl"
-				           captionText="Ticks per second:"
-				           min="1"
-				           max="60"
-				           value="2"
-				           />
 			</HBox>
 		</VBox>
 	</bottom>
