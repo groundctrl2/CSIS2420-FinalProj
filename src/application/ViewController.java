@@ -9,22 +9,14 @@ import application.component.LiveStyleEditor;
 import application.component.SpinnerBox;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
-import javafx.beans.property.Property;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
-import model.CellState;
 import model.ILife;
 
 /**
@@ -73,12 +65,9 @@ public class ViewController {
 	@FXML private HBox secondaryControls;
 	@FXML private SpinnerBox tpsControl;
 	@FXML private ComboBox<String> modelCBox;
-
-	// tentative
 	@FXML private SpinnerBox nrowsControl;
 	@FXML private SpinnerBox ncolsControl;
 	@FXML private SpinnerBox cellSizeControl;
-
 	@FXML private ComboBox<String> gridDimensionsComboBox;
 
 	// ==================
@@ -91,21 +80,13 @@ public class ViewController {
 	// ==================
 	// Grid/Canvas stuff
 	// ==================
-	private Color colorOfLife = Color.BLACK;
-
-	private double canvasWidth;
-	private double canvasHeight;
-
-	private int ncols;
-	private int nrows;
-
-	private int cellSize;
-	private int cellInteriorSize;
-
-	private static final int CELL_BORDER_WIDTH = 1;
+	private ClassicGrid grid;
 
 	// handle for the implementation of the simulation itself
-	private ILife model = new model.LifeInColor();
+	private ILife model = new model.VampireLife();
+
+	// for access from the grid
+	public ILife getModel() { return model; }
 
 	// ================
 	// Animation stuff
@@ -120,7 +101,7 @@ public class ViewController {
 	 * Performs post-processing of the scene graph after loading it from the FXML.
 	 */
 	public void initialize() {
-		initCanvasGrid();
+		initCanvasAndGrid();
 		initButtonHandlers();
 		initTpsControls();
 		initModelSelectorBox();
@@ -154,16 +135,16 @@ public class ViewController {
 		});
 
 		acc.put(keyCombination("Ignore Shortcut+Equals"), () -> {
-			cellSizeControl.setValue(cellSize + 1);
+			cellSizeControl.spinner.increment();
 		});
 
 		acc.put(keyCombination("Ignore Shortcut+Minus"), () -> {
-			cellSizeControl.setValue(cellSize - 1);
+			cellSizeControl.spinner.decrement();
 		});
 
 		acc.put(keyCombination("Shortcut+o"), () -> {
 			debugText.setText("Return to origin");
-			recenterGrid();
+			recenterCanvas();
 		});
 
 		acc.put(keyCombination("Shortcut+t"), () -> {
@@ -210,61 +191,61 @@ public class ViewController {
 	}
 
 	private void initColorMenu() {
-		// initial value
-		colorPicker.setValue(colorOfLife != null ? colorOfLife : Color.BLACK);
+		assert grid != null: "must call initCanvasAndGrid() first";
+
+		if (grid.primaryColor == null)
+			colorPicker.setValue(Color.BLACK);
+		else
+			colorPicker.setValue(grid.primaryColor);
 
 		// update canvas color on color selection
 		colorPicker.setOnAction(e -> {
 			var color = colorPicker.getValue();
 
-			if (colorOfLife.equals(color))
-				return;
+			if (grid.primaryColor.equals(color))
+				return;  // avoid unnecessary redraw
 
-			colorOfLife = color;
-			redrawGrid();
+			grid.primaryColor = color;
+			grid.redraw();
 		});
-
 	}
+
 	private void initGridSizeControls() {
-		ncolsControl.setOnAction(newValue -> {
-			ncols = newValue;
-			gridDimensionsComboBox.setValue(nrows + "x" + ncols);
-			resizeGrid();
+		assert grid != null: "must call initCanvasAndGrid() first";
+
+		nrowsControl.subscribe(newValue -> {
+			grid.setNumRows(newValue);
+			gridDimensionsComboBox.setValue(newValue + "x" + ncolsControl.getValue());
 		});
 
-		nrowsControl.setOnAction(newValue -> {
-			nrows = newValue;
-			gridDimensionsComboBox.setValue(nrows + "x" + ncols);
-			resizeGrid();
+		ncolsControl.subscribe(newValue -> {
+			grid.setNumCols(newValue);
+			gridDimensionsComboBox.setValue(nrowsControl.getValue() + "x" + newValue);
 		});
 
-		cellSizeControl.setOnAction(newValue -> {
-			cellSize = newValue;
-			cellInteriorSize = cellSize - 2*CELL_BORDER_WIDTH;
-			resizeGrid();
-		});
+		cellSizeControl.subscribe(grid::setCellSize);
 
-		ncols = ncolsControl.spinner.getValue();
-		nrows = nrowsControl.spinner.getValue();
-		cellSize = cellSizeControl.spinner.getValue();
-		cellInteriorSize = cellSize - 2*CELL_BORDER_WIDTH;
+		/* Note the order of initialization here. The value must be set before
+		 * the update/change listener is registered on the combo-box in order
+		 * to prevent double initialization of the grid.
+		 */
+		gridDimensionsComboBox.setValue(nrowsControl.getValue() + "x" + ncolsControl.getValue());
 
-		gridDimensionsComboBox.setValue(nrows + "x" + ncols);
 		gridDimensionsComboBox.setOnAction(e -> {
 			String dimensions = gridDimensionsComboBox.getValue();
 			var a = dimensions.split("x");
-			nrows = Integer.valueOf(a[0]);
-			ncols = Integer.valueOf(a[1]);
-			nrowsControl.setValue(nrows);
-			ncolsControl.setValue(ncols);
-			resizeGrid();
+			//
+			int nrows_ = Integer.valueOf(a[0]);
+			int ncols_ = Integer.valueOf(a[1]);
+			// By updating the individual controls, the grid will also be
+			// automatically updated.
+			nrowsControl.setValue(nrows_);
+			ncolsControl.setValue(ncols_);
 		});
-
-		resizeGrid();
 	}
 
 	private void initTpsControls() {
-		tpsControl.setOnAction(newValue -> {
+		tpsControl.subscribe(newValue -> {
 			ticksPerSecond = newValue;
 		});
 
@@ -314,11 +295,17 @@ public class ViewController {
 	/**
 	 * Initializes the canvas.
 	 */
-	private void initCanvasGrid() {
+	private void initCanvasAndGrid() {
 		// Bind canvas container dimensions to the canvas dimensions.
 		centerPane.maxWidthProperty().bind(canvas.widthProperty());
 		centerPane.maxHeightProperty().bind(canvas.heightProperty());
-		resizeGrid();
+
+		grid = new ClassicGrid(this, canvas);
+		// Set initial values of the grid to the initial values in the controls.
+		int nrows = nrowsControl.spinner.getValue();
+		int ncols = ncolsControl.spinner.getValue();
+		int cellSize = cellSizeControl.spinner.getValue();
+		grid.setSize(nrows, ncols, cellSize);
 
 		// For debugging. TODO: delete this
 		canvas.setOnMouseMoved(event -> {
@@ -329,13 +316,10 @@ public class ViewController {
 
 			int x = (int) event.getX();
 			int y = (int) event.getY();
-			int c = toColIndex(x);
-			int r = toRowIndex(y);
+			int c = grid.toColIndex(x) + 1; // use 1-based indexing for display
+			int r = grid.toRowIndex(y) + 1; // use 1-based indexing for display
 			debugText.setText("pos: (%d, %d), cell: [%d, %d]".formatted(x, y, r, c));
 		});
-
-		// Enable click-to-toggle functionality.
-		canvas.setOnMouseClicked(this::toggleDisplayCell);
 	}
 
 	/**
@@ -350,25 +334,22 @@ public class ViewController {
 				var tick = Duration.ofSeconds(1).dividedBy(ticksPerSecond);
 
 				if ((now - timestamp) > tick.toNanos()) {
-					reactToStep(model.step(ViewController.this::setDisplayCell));
+					reactToStep(model.step(grid::setDisplayCell));
 					timestamp = now;
 				}
 			}
 		};
 
 		clearButton.setOnAction(event -> {
-			if (isPlaying)
-				pausePlayButton.fire();
-
+			resetAnimation();
 			model.clear();
-			redrawGrid();
-			stepCount = 0;
-			restart = false;
+			grid.redraw();
+			debugText.setText("Cleared");
 		});
 
 		randomButton.setOnAction(event -> {
 			model.randomize();
-			redrawGrid();
+			grid.redraw();
 			stepCount = 0;
 			restart = false;
 		});
@@ -389,12 +370,14 @@ public class ViewController {
 		});
 
 		stepButton.setOnAction(event -> {
-			reactToStep(model.step(this::setDisplayCell));
+			reactToStep(model.step(grid::setDisplayCell));
 		});
 	}
 
 	/**
-	 * Nonsense.
+	 * Perform miscellaneous actions on each step. For now, this just examines
+	 * the step count and also halts the animation if it stalls (although it
+	 * currently does not detect loops/cycles.
 	 */
 	private void reactToStep(boolean change) {
 		if (restart) {
@@ -402,8 +385,10 @@ public class ViewController {
 			restart = false;
 		}
 
-		if (change)
+		if (change) {
 			stepCount++;
+			debugText.setText("Step count: " + stepCount);
+		}
 		else {
 			// Stop animating if the simulation stalls (reaches a fixed point).
 			if (isPlaying)
@@ -414,106 +399,12 @@ public class ViewController {
 
 			// TODO: detect cycles and react accordingly
 			if (stepCount > 0)
-				debugText.setText("No more changes after " + stepCount + " steps");
+				debugText.setText("No movement after " + stepCount + " steps");
 		}
 
-		debugText.setText("Step count: " + stepCount);
 	}
 
-	/**
-	 * Temporarily changes the color of a component.
-	 *
-	 * @param shape the colorable component
-	 * @param fill the temporary color
-	 * @param property the property whose change of value should cause the
-	 *                 old color to be restored.
-	 * @param <T> the type of the value wrapped by {@code property}
-	 */
-	private <T> void temporarilySetFill(Shape shape, Paint fill, Property<T> property) {
-		var savedFill = shape.getFill();
-		shape.setFill(fill);
-
-		/*
-		 * Add a one-shot change listener that restores the old fill. An anonymous class
-		 * is used instead of lambda so that we can self-reference the listener.
-		 */
-		property.addListener(new ChangeListener<T>() {
-			@Override
-			public void changed(ObservableValue<? extends T> observable, T oldValue, T newValue) {
-				shape.setFill(savedFill);
-				property.removeListener(this);
-			}
-		});
-	}
-
-	/* ===============================
-	 * Canvas/Grid drawing functions.
-	 * ===============================
-	 *
-	 * TODO: move grid data and functions into a separate class so that we can
-	 * switch grid types (rectangular <-> hex).
-	 */
-
-	/** Convert from y-coordinate to row index, rounding down */
-	private int toRowIndex(double y) {
-		return Math.min((int) (y / cellSize), nrows - 1);
-	}
-
-	/** Convert from x-coordinate to column index, rounding down */
-	private int toColIndex(double x) {
-		return Math.min((int) (x / cellSize), ncols - 1);
-	}
-
-	// TODO: check edge cases of coordinate-to-index conversions (rounding errors?)
-
-	/** Convert from row index to y-coordinate of the top-left of cell interior */
-	private double toYCoord(int row) {
-		return CELL_BORDER_WIDTH + row*cellSize;
-	}
-
-	/** Convert from column index to x-coordinate of the top-left of cell interior */
-	private double toXCoord(int col) {
-		return CELL_BORDER_WIDTH + col*cellSize;
-	}
-
-	/**
-	 * Callback for {@link model.ILife#step}.
-	 * <p>
-	 * This is passed (as a lambda) to the model so that it can notify the
-	 * controller whenever a cell changes state, allowing the canvas/grid to be
-	 * incrementally updated.
-	 * <p>
-	 * In theory, this should be more efficient than redrawing the whole grid on
-	 * each step, but with GPUs and buffering and caches, maybe not.
-	 */
-	private void setDisplayCell(int row, int col, CellState state) {
-		var g = canvas.getGraphicsContext2D();
-		double x0 = toXCoord(col);
-		double y0 = toYCoord(row);
-
-		decideColor(g, state);
-		g.fillRect(x0, y0, cellInteriorSize, cellInteriorSize);
-	};
-
-	/**
-	 * Resizes the grid. Currently, this also clears the grid, but it technically
-	 * doesn't have to.
-	 */
-	private void resizeGrid() {
-		canvas.setWidth(canvasWidth = ncols * cellSize);
-		canvas.setHeight(canvasHeight = nrows * cellSize);
-		recenterGrid();
-		resizeModel();
-	}
-
-	private void recenterGrid() {
-		centerPane.setHvalue(0.5);
-		centerPane.setVvalue(0.5);
-	}
-
-	private void resizeModel() {
-		model.resize(nrows, ncols);
-
+	void resetAnimation() {
 		// reset animation variables
 		if (isPlaying)
 			pausePlayButton.fire();
@@ -521,116 +412,17 @@ public class ViewController {
 		assert !isPlaying;
 		timestamp = 0;
 		stepCount = 0;
-
-		redrawGrid();
+		restart = false;
 	}
 
-	/**
-	 * Redraws the whole grid by querying the model for the state of each
-	 * living cell.
-	 */
-	private void redrawGrid() {
-		var g = canvas.getGraphicsContext2D();
-		/*
-		 * We could render each cell by using fillRect() followed by strokeRect() for
-		 * the cell borders. Alternatively, we can draw all the borders as grid lines
-		 * over the whole canvas, and then fill in the cell interiors. We currently,
-		 * take the second approach below.
-		 */
-		g.setFill(Color.WHITE);
-		g.fillRect(0, 0, canvasWidth, canvasHeight);
-		g.setStroke(Color.LIGHTGRAY);
-		g.setLineWidth(2*CELL_BORDER_WIDTH);
-
-		// Draw vertical grid lines
-		for (int x = 0; x < canvasWidth; x += cellSize)
-			g.strokeLine(x, 0, x, canvasHeight);
-
-		// Draw horizontal grid lines
-		for (int y = 0; y < canvasHeight; y += cellSize)
-			g.strokeLine(0, y, canvasWidth, y);
-
-		// Fill in cells which are alive according to the model
-		model.forAllLife((row, col, state) -> {
-			decideColor(g, state);
-
-			double x0 = toXCoord(col);
-			double y0 = toYCoord(row);
-			g.fillRect(x0, y0, cellInteriorSize, cellInteriorSize);
-		});
-
-		// Draw origin lines. `CTRL+O` to re-center scroll pane.
-		g.setLineWidth(2*CELL_BORDER_WIDTH);
-		int halfX = ncols / 2 * cellSize;
-		int halfY = nrows / 2 * cellSize;
-		g.setStroke(Color.GRAY);  // a little darker than normal grid lines
-		g.strokeLine(halfX, 0, halfX, canvasHeight);
-		g.strokeLine(0, halfY, canvasWidth, halfY);
+	void recenterCanvas() {
+		centerPane.setHvalue(0.5);
+		centerPane.setVvalue(0.5);
 	}
 
-	/**
-	 * Toggles the state of the cell that was clicked on.
-	 */
-	private void toggleDisplayCell(MouseEvent event) {
-		var g = canvas.getGraphicsContext2D();
-
-		// Actual mouse click coordinates
-		double x = event.getX();
-		double y = event.getY();
-
-		// Corresponding grid index
-		int row = toRowIndex(y);
-		int col = toColIndex(x);
-
-		// Top-left coordinates of the cell
-		double x0 = toXCoord(col);
-		double y0 = toYCoord(row);
-
-		if (model.get(row, col) == CellState.DEAD) {
-			model.set(row, col, CellState.ALIVE);
-			g.setFill(colorOfLife);
-		}
-		else { // (model.get(row, col) != CellState.DEAD)
-			model.set(row,  col, CellState.DEAD);
-			g.setFill(Color.WHITE);
-		}
-
-		g.fillRect(x0, y0, cellInteriorSize, cellInteriorSize);
-
-	}
-
-	/**
-	 * Changes GraphicsContext objects fill color depending on provided CellState.
-	 *
-	 * @param g GraphicsContext
-	 * @param state CellState
-	 */
-	private void decideColor(GraphicsContext g, CellState state) {
-		switch(state) {
-			case MERMAID:
-				if (ILife.RANDOM.nextBoolean())
-					g.setFill(Color.rgb(87, 111, 141));
-				else
-					g.setFill(Color.rgb(87, 141, 161));
-				break;
-			case VAMPIRE:
-				if (ILife.RANDOM.nextBoolean())
-					g.setFill(Color.rgb(180, 0, 0));
-				else
-					g.setFill(Color.rgb(210, 0, 0));
-				break;
-			case ZOMBIE:
-				if (ILife.RANDOM.nextBoolean())
-					g.setFill(Color.rgb(80, 130, 0));
-				else
-					g.setFill(Color.rgb(80, 160, 0));
-				break;
-			case ALIVE:
-				g.setFill(colorOfLife);
-				break;
-			default: // DEAD
-				g.setFill(Color.WHITE);
-				break;
-		}
+	void resizeModel() {
+		model.resize(grid.nrows(), grid.ncols());
+		resetAnimation();
+		grid.redraw();
 	}
 }

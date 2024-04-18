@@ -75,7 +75,7 @@ public class SpinnerBox extends HBox {
 	public int getValue() { return spinner.getValue(); }
 	public void setValue(int value) { spinner.getValueFactory().setValue(value); }
 
-	public void setOnAction(IntConsumer subscriber) {
+	public void subscribe(IntConsumer subscriber) {
 		spinner.valueProperty().subscribe(newValue -> {
 			if (newValue == null)
 				return;
