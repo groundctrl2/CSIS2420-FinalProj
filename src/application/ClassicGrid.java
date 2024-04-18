@@ -193,19 +193,19 @@ class ClassicGrid {
 		switch(state) {
 			case BLUE:
 				if (ILife.RANDOM.nextBoolean())
-					return Color.rgb(87, 111, 141);
+					return Color.rgb(50, 90, 130);
 				else
-					return Color.rgb(87, 141, 161);
+					return Color.rgb(50, 70, 160);
 			case RED:
 				if (ILife.RANDOM.nextBoolean())
 					return Color.rgb(180, 0, 0);
 				else
-					return Color.rgb(210, 0, 0);
+					return Color.rgb(210, 20, 0);
 			case GREEN:
 				if (ILife.RANDOM.nextBoolean())
 					return Color.rgb(80, 130, 0);
 				else
-					return Color.rgb(80, 160, 0);
+					return Color.rgb(100, 160, 0);
 			case ALIVE:
 				return primaryColor;
 			default: // DEAD
