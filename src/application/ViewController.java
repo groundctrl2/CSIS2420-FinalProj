@@ -490,21 +490,21 @@ public class ViewController {
 		switch(state) {
 			case BLUE:
 				if (ILife.RANDOM.nextBoolean())
-					g.setFill(Color.rgb(87, 111, 141));
+					g.setFill(Color.rgb(50, 90, 130));
 				else
-					g.setFill(Color.rgb(87, 141, 161));
+					g.setFill(Color.rgb(50, 70, 160));
 				break;
 			case RED:
 				if (ILife.RANDOM.nextBoolean())
 					g.setFill(Color.rgb(180, 0, 0));
 				else
-					g.setFill(Color.rgb(210, 0, 0));
+					g.setFill(Color.rgb(210, 20, 0));
 				break;
 			case GREEN:
 				if (ILife.RANDOM.nextBoolean())
 					g.setFill(Color.rgb(80, 130, 0));
 				else
-					g.setFill(Color.rgb(80, 160, 0));
+					g.setFill(Color.rgb(100, 160, 0));
 				break;
 			case ALIVE:
 				g.setFill(Color.BLACK);
