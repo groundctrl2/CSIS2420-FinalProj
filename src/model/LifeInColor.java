@@ -10,6 +10,9 @@ public class LifeInColor implements ILife {
 	private CellState[] cells; // row-col indexed
 	private int nrows;
 	private int ncols;
+	private static final CellState COLOR_1 = CellState.RED;
+	private static final CellState COLOR_2 = CellState.GREEN;
+	private static final CellState COLOR_3 = CellState.BLUE;
 
 	@Override
 	public void resize(int nrows, int ncols) {
@@ -111,11 +114,11 @@ public class LifeInColor implements ILife {
 	private CellState randomSpecies() {
 		int randomInt = RANDOM.nextInt(3);
 		if (randomInt == 0)
-			return CellState.VAMPIRE;
+			return COLOR_1;
 		else if (randomInt == 1)
-			return CellState.ZOMBIE;
+			return COLOR_2;
 		else
-			return CellState.MERMAID;
+			return COLOR_3;
 	}
 
 	@Override
