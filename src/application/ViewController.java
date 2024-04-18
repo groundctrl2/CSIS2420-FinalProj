@@ -488,19 +488,19 @@ public class ViewController {
 	 */
 	private void decideColor(GraphicsContext g, CellState state) {
 		switch(state) {
-			case MERMAID:
+			case BLUE:
 				if (ILife.RANDOM.nextBoolean())
 					g.setFill(Color.rgb(87, 111, 141));
 				else
 					g.setFill(Color.rgb(87, 141, 161));
 				break;
-			case VAMPIRE:
+			case RED:
 				if (ILife.RANDOM.nextBoolean())
 					g.setFill(Color.rgb(180, 0, 0));
 				else
 					g.setFill(Color.rgb(210, 0, 0));
 				break;
-			case ZOMBIE:
+			case GREEN:
 				if (ILife.RANDOM.nextBoolean())
 					g.setFill(Color.rgb(80, 130, 0));
 				else

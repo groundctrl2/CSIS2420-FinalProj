@@ -14,6 +14,7 @@ public class ZombieLife implements ILife {
 	private int ncols;
 	private int[][] zombieTargets; // row-col indexed
 	private int zombieCount = 0;
+	private static final CellState COLOR_1 = CellState.GREEN;
 
 	@Override
 	public void resize(int nrows, int ncols) {
@@ -117,7 +118,7 @@ public class ZombieLife implements ILife {
 				cells[current] = CellState.DEAD;
 
 		// Generate 1 zombie.
-		cells[RANDOM.nextInt(cells.length)] = CellState.ZOMBIE;
+		cells[RANDOM.nextInt(cells.length)] = COLOR_1;
 	}
 
 	@Override
@@ -137,7 +138,7 @@ public class ZombieLife implements ILife {
 		// Calculate needed updates
 		for (int current = 0; current < cells.length; current++) {
 			// If cell is ZOMBIE
-			if ((cells[current] == CellState.ZOMBIE)) {
+			if ((cells[current] == COLOR_1)) {
 				// Find alive cells
 				ArrayList<Integer> aliveCells = new ArrayList<>();
 				for (int cell = 0; cell < cells.length; cell++)
@@ -207,7 +208,7 @@ public class ZombieLife implements ILife {
 						int newCol = convertToCol(nextPosition);
 
 						queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
-						queue.enqueue(new Cell(newRow, newCol, CellState.ZOMBIE));
+						queue.enqueue(new Cell(newRow, newCol, COLOR_1));
 
 						// Set new zombie target values
 						zombieTargets[convertToIndex(newRow, newCol)][0] = zombieTargets[current][0];
@@ -217,7 +218,7 @@ public class ZombieLife implements ILife {
 					}
 					// If not moving, stay in place
 					else {
-						queue.enqueue(new Cell(oldRow, oldCol, CellState.ZOMBIE));
+						queue.enqueue(new Cell(oldRow, oldCol, COLOR_1));
 					}
 				}
 				// Else zombie starves.
@@ -233,13 +234,13 @@ public class ZombieLife implements ILife {
 					if (cells[neighbor] == CellState.ALIVE)
 						aliveNeighbors++;
 
-					if (cells[neighbor] == CellState.ZOMBIE);
+					if (cells[neighbor] == COLOR_1);
 				}
 
 				// Check if there's a zombie neighbor
 				boolean zombieNeighbor = false;
 				for (int neighbor : world.adj(current)) {
-					if (cells[neighbor] == CellState.ZOMBIE)
+					if (cells[neighbor] == COLOR_1)
 						zombieNeighbor = true;
 				}
 
@@ -249,7 +250,7 @@ public class ZombieLife implements ILife {
 
 				if (cells[current] == CellState.ALIVE) {
 					if (zombieNeighbor) {// If cell has a zombie neighbor, cell becomes a zombie.
-						queue.enqueue(new Cell(row, col, CellState.ZOMBIE));
+						queue.enqueue(new Cell(row, col, COLOR_1));
 						zombieTargets[current][0] = -1; // Reset target
 						zombieTargets[current][1] = 0; // Reset target step count
 					}
@@ -278,7 +279,7 @@ public class ZombieLife implements ILife {
 			}
 			set(cell.row(), cell.col(), cell.state());
 
-			if (cell.state() == CellState.ZOMBIE)
+			if (cell.state() == COLOR_1)
 				newZombieCount++;
 		}
 		zombieCount = newZombieCount;
@@ -289,7 +290,7 @@ public class ZombieLife implements ILife {
 	@Override
 	public void forAllLife(Callback action) {
 		for (int current = 0; current < cells.length; current++)
-			if (cells[current] == CellState.ALIVE || cells[current] == CellState.ZOMBIE)
+			if (cells[current] == CellState.ALIVE || cells[current] == COLOR_1)
 				action.invoke(convertToRow(current), convertToCol(current), cells[current]);
 	}
 
@@ -298,7 +299,7 @@ public class ZombieLife implements ILife {
 		long count = 0;
 
 		for (var state : cells)
-			if (state == CellState.ALIVE || state == CellState.ZOMBIE)
+			if (state == CellState.ALIVE || state == COLOR_1)
 				count++;
 
 		return count;

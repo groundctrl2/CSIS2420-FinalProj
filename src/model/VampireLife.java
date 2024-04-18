@@ -14,6 +14,7 @@ public class VampireLife implements ILife {
 	private int ncols;
 	private int[][] vampireTargets; // row-col indexed
 	private int vampireCount = 0;
+	private static final CellState COLOR_1 = CellState.RED;
 
 	@Override
 	public void resize(int nrows, int ncols) {
@@ -117,7 +118,7 @@ public class VampireLife implements ILife {
 				cells[current] = CellState.DEAD;
 
 		// Generate 1 vampire.
-		cells[RANDOM.nextInt(cells.length)] = CellState.VAMPIRE;
+		cells[RANDOM.nextInt(cells.length)] = COLOR_1;
 	}
 
 	@Override
@@ -137,7 +138,7 @@ public class VampireLife implements ILife {
 		// Calculate needed updates
 		for (int current = 0; current < cells.length; current++) {
 			// If cell is vampire
-			if ((cells[current] == CellState.VAMPIRE)) {
+			if ((cells[current] == COLOR_1)) {
 				// Find alive cells
 				ArrayList<Integer> aliveCells = new ArrayList<>();
 				for (int cell = 0; cell < cells.length; cell++)
@@ -207,7 +208,7 @@ public class VampireLife implements ILife {
 						int newCol = convertToCol(nextPosition);
 
 						queue.enqueue(new Cell(oldRow, oldCol, CellState.DEAD));
-						queue.enqueue(new Cell(newRow, newCol, CellState.VAMPIRE));
+						queue.enqueue(new Cell(newRow, newCol, COLOR_1));
 
 						// Set new vampire target values
 						vampireTargets[convertToIndex(newRow, newCol)][0] = vampireTargets[current][0];
@@ -217,12 +218,12 @@ public class VampireLife implements ILife {
 					}
 					// If not moving, stay in place
 					else {
-						queue.enqueue(new Cell(oldRow, oldCol, CellState.VAMPIRE));
+						queue.enqueue(new Cell(oldRow, oldCol, COLOR_1));
 					}
 				}
 				// Else vampire lives in immortal peace.
 				else {
-					queue.enqueue(new Cell(oldRow, oldCol, CellState.VAMPIRE));
+					queue.enqueue(new Cell(oldRow, oldCol, COLOR_1));
 				}
 			}
 			// else cell is ALIVE or DEAD
@@ -233,13 +234,13 @@ public class VampireLife implements ILife {
 					if (cells[neighbor] == CellState.ALIVE)
 						aliveNeighbors++;
 
-					if (cells[neighbor] == CellState.VAMPIRE);
+					if (cells[neighbor] == COLOR_1);
 				}
 
 				// Check if there's a vampire neighbor
 				boolean vampireNeighbor = false;
 				for (int neighbor : world.adj(current)) {
-					if (cells[neighbor] == CellState.VAMPIRE)
+					if (cells[neighbor] == COLOR_1)
 						vampireNeighbor = true;
 				}
 
@@ -249,7 +250,7 @@ public class VampireLife implements ILife {
 
 				if (cells[current] == CellState.ALIVE) {
 					if (vampireNeighbor) {// If cell has a vampire neighbor, cell becomes a vampire
-						queue.enqueue(new Cell(row, col, CellState.VAMPIRE));
+						queue.enqueue(new Cell(row, col, COLOR_1));
 						vampireCount++;
 						vampireTargets[current][0] = -1; // Reset target
 						vampireTargets[current][1] = 0; // Reset target step count
@@ -279,7 +280,7 @@ public class VampireLife implements ILife {
 			}
 			set(cell.row(), cell.col(), cell.state());
 
-			if (cell.state() == CellState.VAMPIRE)
+			if (cell.state() == COLOR_1)
 				newvampireCount++;
 		}
 		vampireCount = newvampireCount;
@@ -290,7 +291,7 @@ public class VampireLife implements ILife {
 	@Override
 	public void forAllLife(Callback action) {
 		for (int current = 0; current < cells.length; current++)
-			if (cells[current] == CellState.ALIVE || cells[current] == CellState.VAMPIRE)
+			if (cells[current] == CellState.ALIVE || cells[current] == COLOR_1)
 				action.invoke(convertToRow(current), convertToCol(current), cells[current]);
 	}
 
@@ -299,7 +300,7 @@ public class VampireLife implements ILife {
 		long count = 0;
 
 		for (var state : cells)
-			if (state == CellState.ALIVE || state == CellState.VAMPIRE)
+			if (state == CellState.ALIVE || state == COLOR_1)
 				count++;
 
 		return count;
