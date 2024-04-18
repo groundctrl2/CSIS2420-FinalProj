@@ -191,17 +191,17 @@ class ClassicGrid {
 	 */
 	private Color decideColor(CellState state) {
 		switch(state) {
-			case MERMAID:
+			case BLUE:
 				if (ILife.RANDOM.nextBoolean())
 					return Color.rgb(87, 111, 141);
 				else
 					return Color.rgb(87, 141, 161);
-			case VAMPIRE:
+			case RED:
 				if (ILife.RANDOM.nextBoolean())
 					return Color.rgb(180, 0, 0);
 				else
 					return Color.rgb(210, 0, 0);
-			case ZOMBIE:
+			case GREEN:
 				if (ILife.RANDOM.nextBoolean())
 					return Color.rgb(80, 130, 0);
 				else

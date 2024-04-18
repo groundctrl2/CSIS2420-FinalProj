@@ -111,11 +111,11 @@ public class LifeInColor implements ILife {
 	private CellState randomSpecies() {
 		int randomInt = RANDOM.nextInt(3);
 		if (randomInt == 0)
-			return CellState.VAMPIRE;
+			return CellState.RED;
 		else if (randomInt == 1)
-			return CellState.ZOMBIE;
+			return CellState.GREEN;
 		else
-			return CellState.MERMAID;
+			return CellState.BLUE;
 	}
 
 	@Override
