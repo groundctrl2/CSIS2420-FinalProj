@@ -6,7 +6,7 @@ import java.util.Set;
 
 /**
  * An implementation of Conway's Game of Life (B3/S23)
- * using an sparse representation of the world.
+ * using a sparse representation of the world.
  */
 public class SparseLife implements ILife {
 	private int nrows;

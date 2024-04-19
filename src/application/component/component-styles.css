@@ -1,0 +1,48 @@
+/* 
+ * Default styles for custom/specialized application components. 
+ */
+ 
+/* Make menu buttons look like a regular button:
+ * https://stackoverflow.com/a/30211975
+ */
+.constrained-color-picker > .arrow-button,
+.constrained-color-picker > .arrow-button > .arrow {
+	-fx-padding: 0;
+}
+
+.constrained-color-picker .context-menu {
+	-fx-background-color: rgba(255, 255, 255, 0.75);
+}
+
+/* "Disable" highlight on custom color menu item */
+.color-menu:focused {
+	-fx-background-color: transparent;
+}
+
+.color-menu VBox {
+	-fx-spacing: 3;
+}
+
+.color-menu VBox .separator {
+	-fx-orientation: horizontal;
+	-fx-valignment: center;
+}
+
+.color-menu TilePane {
+	-fx-hgap: 3;
+	-fx-vgap: 3;
+}
+
+/* Color tiles are added in the controller, not the FXML file.
+ */
+.color-menu .color-tile {
+	-fx-stroke-type: inside;
+	-fx-stroke-width: 2;
+	-fx-arc-width: 10;
+	-fx-arc-height: 10;
+}
+/* See controller.
+ */
+.color-menu .color-tile:hover {
+	-fx-stroke: cyan;
+}
