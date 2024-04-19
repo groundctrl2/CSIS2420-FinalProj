@@ -16,6 +16,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 import model.ILife;
 
@@ -55,20 +56,23 @@ public class ViewController {
 
 	// bottom stuff
 	@FXML private VBox bottomBox;
-	@FXML private HBox mainControlBar;
 	@FXML private Button clearButton;
 	@FXML private Button randomButton;
 	@FXML private Button pausePlayButton;
 	@FXML private Button stepButton;
-	@FXML private Text debugText;
 
-	@FXML private HBox secondaryControls;
-	@FXML private SpinnerBox tpsControl;
 	@FXML private ComboBox<String> modelCBox;
+	@FXML private ToggleGroup gridToggleGroup;
+	@FXML private RadioButton classicRadioButton;
+	@FXML private RadioButton hexRadioButton;
+
+	@FXML private SpinnerBox tpsControl;
 	@FXML private SpinnerBox nrowsControl;
 	@FXML private SpinnerBox ncolsControl;
 	@FXML private SpinnerBox cellSizeControl;
 	@FXML private ComboBox<String> gridDimensionsComboBox;
+	@FXML private Text debugText;
+
 
 	// ==================
 	// Toolbar stuff
@@ -80,7 +84,7 @@ public class ViewController {
 	// ==================
 	// Grid/Canvas stuff
 	// ==================
-	private ClassicGrid grid;
+	private Grid grid;
 
 	// handle for the implementation of the simulation itself
 	private ILife model = new model.VampireLife();
@@ -104,193 +108,14 @@ public class ViewController {
 		initCanvasAndGrid();
 		initButtonHandlers();
 		initTpsControls();
-		initModelSelectorBox();
 		initGridSizeControls();
+		initModelSelectorBox();
 		initToolBar();
 
 		// The scene isn't set until after initialization, so run later.
 		Platform.runLater(this::installHotkeys);
 	}
 
-	private void installHotkeys() {
-		var acc = root.getScene().getAccelerators();
-
-		acc.put(keyCombination("Shortcut+P"), pausePlayButton::requestFocus);
-		acc.put(keyCombination("P"), pausePlayButton::fire);
-		acc.put(keyCombination("PLAY"), pausePlayButton::fire);
-		acc.put(keyCombination("PAUSE"), pausePlayButton::fire);
-		// acc.put(keyCombination("Shift+Comma"), backButton::fire);  // '<'
-		// acc.put(keyCombination("b"), backButton::fire);
-		acc.put(keyCombination("Shift+Period"), stepButton::fire);  // '>'
-		acc.put(keyCombination("F"), stepButton::fire);
-		acc.put(keyCombination("Shift+C"), clearButton::fire);
-		acc.put(keyCombination("Shift+R"), randomButton::fire);
-
-		acc.put(keyCombination("Close Bracket"), () -> {  // ']'
-			tpsControl.setValue(ticksPerSecond + 1);
-		});
-
-		acc.put(keyCombination("Open Bracket"), () -> {  // '['
-			tpsControl.setValue(ticksPerSecond - 1);
-		});
-
-		acc.put(keyCombination("Ignore Shortcut+Equals"), () -> {
-			cellSizeControl.spinner.increment();
-		});
-
-		acc.put(keyCombination("Ignore Shortcut+Minus"), () -> {
-			cellSizeControl.spinner.decrement();
-		});
-
-		acc.put(keyCombination("Shortcut+o"), () -> {
-			debugText.setText("Return to origin");
-			recenterCanvas();
-		});
-
-		acc.put(keyCombination("Shortcut+t"), () -> {
-			toolbar.setManaged(!toolbar.isManaged());
-			toolbar.setVisible(!toolbar.isVisible());
-		});
-	}
-
-	private void initToolBar() {
-		for (var item : toolbar.getItems()) {
-			if (item instanceof Labeled labeled) {
-				var tip = new Tooltip(labeled.getText());
-				tip.setShowDelay(javafx.util.Duration.millis(200));
-				labeled.setTooltip(tip);
-			}
-
-			if (item instanceof Button button) {
-				button.setOnAction(e -> {
-					debugText.setText("'" + button.getId() + "' not implemented yet!");
-				});
-			}
-		}
-
-		initColorMenu();
-		initLiveStyleEditor();
-
-		// Hide toolbar while it's unfinished.
-		toolbar.setVisible(false);
-		toolbar.setManaged(false);
-	}
-
-	private void initLiveStyleEditor() {
-		var stylesheet = this.getClass().getResource("styles.css");
-		var editor = new LiveStyleEditor(root, stylesheet);
-
-		styleEditorButton.setOnAction(e -> {
-			boolean success = editor.launch();
-
-			if (!success) {
-				styleEditorButton.setDisable(true);
-				debugText.setText("Unable to launch style editor");
-			}
-		});
-	}
-
-	private void initColorMenu() {
-		assert grid != null: "must call initCanvasAndGrid() first";
-
-		if (grid.primaryColor == null)
-			colorPicker.setValue(Color.BLACK);
-		else
-			colorPicker.setValue(grid.primaryColor);
-
-		// update canvas color on color selection
-		colorPicker.setOnAction(e -> {
-			var color = colorPicker.getValue();
-
-			if (grid.primaryColor.equals(color))
-				return;  // avoid unnecessary redraw
-
-			grid.primaryColor = color;
-			grid.redraw();
-		});
-	}
-
-	private void initGridSizeControls() {
-		assert grid != null: "must call initCanvasAndGrid() first";
-
-		nrowsControl.subscribe(newValue -> {
-			grid.setNumRows(newValue);
-			gridDimensionsComboBox.setValue(newValue + "x" + ncolsControl.getValue());
-		});
-
-		ncolsControl.subscribe(newValue -> {
-			grid.setNumCols(newValue);
-			gridDimensionsComboBox.setValue(nrowsControl.getValue() + "x" + newValue);
-		});
-
-		cellSizeControl.subscribe(grid::setCellSize);
-
-		/* Note the order of initialization here. The value must be set before
-		 * the update/change listener is registered on the combo-box in order
-		 * to prevent double initialization of the grid.
-		 */
-		gridDimensionsComboBox.setValue(nrowsControl.getValue() + "x" + ncolsControl.getValue());
-
-		gridDimensionsComboBox.setOnAction(e -> {
-			String dimensions = gridDimensionsComboBox.getValue();
-			var a = dimensions.split("x");
-			//
-			int nrows_ = Integer.valueOf(a[0]);
-			int ncols_ = Integer.valueOf(a[1]);
-			// By updating the individual controls, the grid will also be
-			// automatically updated.
-			nrowsControl.setValue(nrows_);
-			ncolsControl.setValue(ncols_);
-		});
-	}
-
-	private void initTpsControls() {
-		tpsControl.subscribe(newValue -> {
-			ticksPerSecond = newValue;
-		});
-
-		// See FXML for initial value.
-		ticksPerSecond = tpsControl.spinner.getValue();
-	}
-
-	private void initModelSelectorBox() {
-		var items = modelCBox.getItems();
-		var lookupTable = new HashMap<String, Class<? extends ILife>>();
-
-		/*
-		 * Add the name of each concrete model class to the combo box,
-		 * and link the name to the actual class object in a map.
-		 */
-		for (var cls : ILife.implementations()) {
-			String key = cls.getSimpleName();
-			items.add(key);
-			lookupTable.put(key, cls);
-		}
-
-		// Set the current value to the current model's class.
-		String currentSelection = model.getClass().getSimpleName();
-		assert lookupTable.containsKey(currentSelection): currentSelection;
-		modelCBox.setValue(currentSelection);
-
-		// Update the model whenever the combo box value changes.
-		modelCBox.setOnAction(event -> {
-			var className = modelCBox.getValue();
-			var selectedClass = lookupTable.get(className);
-
-			if (selectedClass.equals(model.getClass())) {
-				debugText.setText("No change");
-				return;
-			}
-
-			try {
-				model = selectedClass.getConstructor().newInstance();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			resizeModel();
-		});
-	}
 
 	/**
 	 * Initializes the canvas.
@@ -300,12 +125,8 @@ public class ViewController {
 		centerPane.maxWidthProperty().bind(canvas.widthProperty());
 		centerPane.maxHeightProperty().bind(canvas.heightProperty());
 
-		grid = new ClassicGrid(this, canvas);
-		// Set initial values of the grid to the initial values in the controls.
-		int nrows = nrowsControl.spinner.getValue();
-		int ncols = ncolsControl.spinner.getValue();
-		int cellSize = cellSizeControl.spinner.getValue();
-		grid.setSize(nrows, ncols, cellSize);
+		// subscribe() will also immediately fire and init the grid
+		gridToggleGroup.selectedToggleProperty().subscribe(this::setGrid);
 
 		// For debugging. TODO: delete this
 		canvas.setOnMouseMoved(event -> {
@@ -316,10 +137,24 @@ public class ViewController {
 
 			int x = (int) event.getX();
 			int y = (int) event.getY();
-			int c = grid.toColIndex(x) + 1; // use 1-based indexing for display
-			int r = grid.toRowIndex(y) + 1; // use 1-based indexing for display
+			int[] index = grid.toRowColIndex(x, y);
+			int r = index[0] + 1; // use 1-based indexing for display
+			int c = index[1] + 1; // use 1-based indexing for display
 			debugText.setText("pos: (%d, %d), cell: [%d, %d]".formatted(x, y, r, c));
 		});
+	}
+
+	private void setGrid(Toggle selectedToggle) {
+		if (selectedToggle == classicRadioButton)
+			grid = new Grid.Classic(this, canvas);
+		else
+			grid = new Grid.Hex(this, canvas);
+
+		// Set initial values of the grid to the initial values in the controls.
+		int nrows = nrowsControl.spinner.getValue();
+		int ncols = ncolsControl.spinner.getValue();
+		int cellSize = cellSizeControl.spinner.getValue();
+		grid.setSize(nrows, ncols, cellSize);
 	}
 
 	/**
@@ -424,5 +259,192 @@ public class ViewController {
 		model.resize(grid.nrows(), grid.ncols());
 		resetAnimation();
 		grid.redraw();
+	}
+
+	Paint getRootBackgroundColor() {
+		return Color.web("#576F8D");
+	}
+
+	private void initTpsControls() {
+		tpsControl.subscribe(newValue -> {
+			ticksPerSecond = newValue;
+		});
+
+		// See FXML for initial value.
+		ticksPerSecond = tpsControl.spinner.getValue();
+	}
+
+	private void initGridSizeControls() {
+		assert grid != null: "must call initCanvasAndGrid() first";
+
+		nrowsControl.subscribe(newValue -> {
+			grid.setNumRows(newValue);
+			gridDimensionsComboBox.setValue(newValue + "x" + ncolsControl.getValue());
+		});
+
+		ncolsControl.subscribe(newValue -> {
+			grid.setNumCols(newValue);
+			gridDimensionsComboBox.setValue(nrowsControl.getValue() + "x" + newValue);
+		});
+
+		// Note: avoid temptation to use method reference here because `grid` can change
+		cellSizeControl.subscribe(newValue -> {
+			grid.setCellSize(newValue);
+		});
+
+		/* Note the order of initialization here. The value must be set before
+		 * the update/change listener is registered on the combo-box in order
+		 * to prevent double initialization of the grid.
+		 */
+		gridDimensionsComboBox.setValue(nrowsControl.getValue() + "x" + ncolsControl.getValue());
+
+		gridDimensionsComboBox.setOnAction(e -> {
+			String dimensions = gridDimensionsComboBox.getValue();
+			var a = dimensions.split("x");
+			//
+			int nrows_ = Integer.valueOf(a[0]);
+			int ncols_ = Integer.valueOf(a[1]);
+			// By updating the individual controls, the grid will also be
+			// automatically updated.
+			nrowsControl.setValue(nrows_);
+			ncolsControl.setValue(ncols_);
+		});
+	}
+
+	private void initModelSelectorBox() {
+		var items = modelCBox.getItems();
+		var lookupTable = new HashMap<String, Class<? extends ILife>>();
+
+		/*
+		 * Add the name of each concrete model class to the combo box,
+		 * and link the name to the actual class object in a map.
+		 */
+		for (var cls : ILife.implementations()) {
+			String key = cls.getSimpleName();
+			items.add(key);
+			lookupTable.put(key, cls);
+		}
+
+		// Set the current value to the current model's class.
+		String currentSelection = model.getClass().getSimpleName();
+		assert lookupTable.containsKey(currentSelection): currentSelection;
+		modelCBox.setValue(currentSelection);
+
+		// Update the model whenever the combo box value changes.
+		modelCBox.setOnAction(event -> {
+			var className = modelCBox.getValue();
+			var selectedClass = lookupTable.get(className);
+
+			if (selectedClass.equals(model.getClass())) {
+				debugText.setText("No change");
+				return;
+			}
+
+			try {
+				model = selectedClass.getConstructor().newInstance();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			resizeModel();
+		});
+	}
+
+	private void initToolBar() {
+		for (var item : toolbar.getItems()) {
+			if (item instanceof Labeled labeled) {
+				var tip = new Tooltip(labeled.getText());
+				tip.setShowDelay(javafx.util.Duration.millis(200));
+				labeled.setTooltip(tip);
+			}
+
+			if (item instanceof Button button) {
+				button.setOnAction(e -> {
+					debugText.setText("'" + button.getId() + "' not implemented yet!");
+				});
+			}
+		}
+
+		initColorMenu();
+		initLiveStyleEditor();
+
+		// Hide toolbar while it's unfinished.
+		toolbar.setVisible(false);
+		toolbar.setManaged(false);
+	}
+
+	private void initColorMenu() {
+		assert grid != null: "must call initCanvasAndGrid() first";
+
+		if (grid.primaryColor == null)
+			colorPicker.setValue(Color.BLACK);
+		else
+			colorPicker.setValue(grid.primaryColor);
+
+		// update canvas color on color selection
+		colorPicker.setOnAction(e -> {
+			var color = colorPicker.getValue();
+
+			if (grid.primaryColor.equals(color))
+				return;  // avoid unnecessary redraw
+
+			grid.primaryColor = color;
+			grid.redraw();
+		});
+	}
+
+	private void initLiveStyleEditor() {
+		var stylesheet = this.getClass().getResource("styles.css");
+		var editor = new LiveStyleEditor(root, stylesheet);
+
+		styleEditorButton.setOnAction(e -> {
+			boolean success = editor.launch();
+
+			if (!success) {
+				styleEditorButton.setDisable(true);
+				debugText.setText("Unable to launch style editor");
+			}
+		});
+	}
+
+	private void installHotkeys() {
+		var acc = root.getScene().getAccelerators();
+
+		acc.put(keyCombination("Shortcut+P"), pausePlayButton::requestFocus);
+		acc.put(keyCombination("P"), pausePlayButton::fire);
+		acc.put(keyCombination("PLAY"), pausePlayButton::fire);
+		acc.put(keyCombination("PAUSE"), pausePlayButton::fire);
+		// acc.put(keyCombination("Shift+Comma"), backButton::fire);  // '<'
+		// acc.put(keyCombination("b"), backButton::fire);
+		acc.put(keyCombination("Shift+Period"), stepButton::fire);  // '>'
+		acc.put(keyCombination("F"), stepButton::fire);
+		acc.put(keyCombination("Shift+C"), clearButton::fire);
+		acc.put(keyCombination("Shift+R"), randomButton::fire);
+
+		acc.put(keyCombination("Close Bracket"), () -> {  // ']'
+			tpsControl.setValue(ticksPerSecond + 1);
+		});
+
+		acc.put(keyCombination("Open Bracket"), () -> {  // '['
+			tpsControl.setValue(ticksPerSecond - 1);
+		});
+
+		acc.put(keyCombination("Ignore Shortcut+Equals"), () -> {
+			cellSizeControl.spinner.increment();
+		});
+
+		acc.put(keyCombination("Ignore Shortcut+Minus"), () -> {
+			cellSizeControl.spinner.decrement();
+		});
+
+		acc.put(keyCombination("Shortcut+o"), () -> {
+			debugText.setText("Return to origin");
+			recenterCanvas();
+		});
+
+		acc.put(keyCombination("Shortcut+t"), () -> {
+			toolbar.setManaged(!toolbar.isManaged());
+			toolbar.setVisible(!toolbar.isVisible());
+		});
 	}
 }
