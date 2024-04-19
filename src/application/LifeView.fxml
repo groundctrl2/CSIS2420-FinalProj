@@ -119,28 +119,53 @@
 				<Button id="step-button"       fx:id="stepButton"      styleClass="app-button" text="STEP" />
 			</HBox>
 
-			<HBox id="secondary-controls" fx:id="secondaryControls">
+			<HBox id="secondary-controls-1" fx:id="secondaryControls1">
 				<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
 
+				<ComboBox id="model-cbox" fx:id="modelCBox">
+					<!-- Will be populated in the controller -->
+				</ComboBox>
+				
+				<fx:define>
+					<ToggleGroup fx:id="gridToggleGroup" />
+				</fx:define>
+
+				<RadioButton id="classic-radio-button"
+				             fx:id="classicRadioButton"
+				             text="Classic Grid"
+				             toggleGroup="$gridToggleGroup"
+				             />
+
+				<RadioButton id="hex-radio-button"
+				             fx:id="hexRadioButton"
+				             text="Hex Grid"
+				             toggleGroup="$gridToggleGroup"
+				             selected="true"
+				             />
+				
+				<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
+			</HBox>
+			
+			<HBox id="secondary-controls-2" fx:id="secondaryControls2">
 				<SpinnerBox fx:id="cellSizeControl"
 				            label="cell size:"
 				            min="2"
 				            max="64"
-				            value="16"
+				            value="32"
 				            />
 
 				<SpinnerBox fx:id="nrowsControl"
 				            label="nrows:"
 				            min="3"
 				            max="400"
-				            value="32"
+				            value="18"
 				            />
 
 				<SpinnerBox fx:id="ncolsControl"
 				            label="ncols:"
 				            min="3"
 				            max="500"
-				            value="70"
+				            value="36"
 				            />
 
 				<ComboBox id="grid-dimensions-cbox" fx:id="gridDimensionsComboBox">
@@ -160,12 +185,6 @@
 				            max="60"
 				            value="2"
 				            />
-			
-				<ComboBox id="model-cbox" fx:id="modelCBox">
-					<!-- Will be populated in the controller -->
-				</ComboBox>
-				
-				<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
 			</HBox>
 
 			<HBox id="debug-group" fx:id="debugGroup">
