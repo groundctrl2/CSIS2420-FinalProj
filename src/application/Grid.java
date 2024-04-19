@@ -19,7 +19,7 @@ abstract class Grid {
 	final GraphicsContext graphics;
 
 	Color primaryColor = Color.BLACK;
-	static final Color TILE_BORDER_COLOR = Color.LIGHTGRAY;
+	static final Color TILE_BORDER_COLOR =  Color.rgb(87, 111, 141);
 	static final Color AXIS_COLOR = Color.GRAY;
 
 	protected int nrows;
