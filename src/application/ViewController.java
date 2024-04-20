@@ -154,6 +154,9 @@ public class ViewController {
 		});
 	}
 
+	/**
+	 * Sets the grid type based on the selected radio button/toggle.
+	 */
 	private void setGrid(Toggle selectedToggle) {
 		if (selectedToggle == classicRadioButton) {
 			grid = new Grid.Classic(this, canvas, centerPane);
@@ -386,7 +389,7 @@ public class ViewController {
 			resizeModel();
 		});
 
-		// Should bind width the sidebar width - insets, but this will do for now.
+		// Should bind width to (sidebar width - insets), but this will do for now.
 		modelInfo.maxWidthProperty().bind(sidebar.widthProperty().subtract(20));
 		modelInfo.setText(model.description());
 	}

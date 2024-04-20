@@ -11,9 +11,16 @@ import model.ILife;
 
 /**
  * Abstract base class for rectangular grids.
+ * <p>
+ * This class is a just a thin wrapper over the controller's canvas. It handles
+ * the visual display of the data in the controller's model.
+ * <p>
+ * Originally, all of this code was in the controller, but for ease of switching
+ * between grid types, it was moved out. It is still heavily tied to the
+ * {@link ViewController} class.
  *
- * @see Grid#Classic
- * 
+ * @see Grid.Classic
+ * @see Grid.Hex
  * @author Paul Nguyen
  * @author Tommy Collier
  */

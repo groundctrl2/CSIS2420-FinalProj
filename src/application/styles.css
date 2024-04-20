@@ -1,8 +1,9 @@
 /* Styles for the scene graph in LifeView.fxml
  *
  * Relative/local resource-based styles are currently placed in a separate
- * stylesheet to allow the live style-editor to function.
+ * stylesheet (style-resources.css) to allow the live style-editor to function.
  */
+ 
 .root {
 	/*
 	 * Apparently FX doesn't (currently?) support CSS variables, but does
