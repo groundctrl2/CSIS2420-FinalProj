@@ -5,6 +5,12 @@ import java.util.Arrays;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 
+/**
+ * Hex version of GraphLife, a graph-based version of Conway's Game of Life
+ * 
+ * @author Tommy Collier
+ * @author Paul Nguyen
+ */
 public class HexLife implements ILife {
 	private Graph world;
 	private CellState[] cells; // row-col indexed
@@ -57,7 +63,7 @@ public class HexLife implements ILife {
 	}
 
 	/**
-	 * Adds neighbor edges to given cell.
+	 * Adds hex neighbor edges to given cell.
 	 *
 	 * @param index
 	 */
