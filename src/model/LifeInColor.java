@@ -203,4 +203,11 @@ public class LifeInColor implements ILife {
 
 		return count;
 	}
+	
+	/**
+	 * @return Description of this model
+	 */
+	public String description() {
+		return "Life In Color.\n3 games of the Game of Life stacked on top of each other."; 
+	}
 }

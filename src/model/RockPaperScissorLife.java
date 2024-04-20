@@ -183,4 +183,11 @@ public class RockPaperScissorLife implements ILife {
 	public long populationCount() {
 		return nrows * ncols; // All cells are considered alive.
 	}
+	
+	/**
+	 * @return Description of this model
+	 */
+	public String description() {
+		return "Rock Paper Scissors.\nIf a cell has 2 or more 'predator neighbors', the cell is overtaken."; 
+	}
 }

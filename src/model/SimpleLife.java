@@ -131,4 +131,11 @@ public class SimpleLife implements ILife {
 
 		return count;
 	}
+	
+	/**
+	 * @return Description of this model
+	 */
+	public String description() {
+		return "Conway's Game of Life.\nImplemented using a 2D array."; 
+	}
 }

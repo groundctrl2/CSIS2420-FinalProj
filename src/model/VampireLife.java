@@ -305,4 +305,11 @@ public class VampireLife implements ILife {
 
 		return count;
 	}
+	
+	/**
+	 * @return Description of this model
+	 */
+	public String description() {
+		return "Vampires vs The Game of Life.\nVampires use BFS to attack all life."; 
+	}
 }

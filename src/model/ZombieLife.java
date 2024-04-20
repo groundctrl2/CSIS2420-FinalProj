@@ -304,4 +304,11 @@ public class ZombieLife implements ILife {
 
 		return count;
 	}
+	
+	/**
+	 * @return Description of this model
+	 */
+	public String description() {
+		return "Zombies vs The Game of Life.\nZombies use BFS to attack all life."; 
+	}
 }
