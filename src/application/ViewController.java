@@ -56,6 +56,7 @@ public class ViewController {
 	@FXML private Button randomButton;
 	@FXML private Button pausePlayButton;
 	@FXML private Button stepButton;
+	@FXML private Text debugText;
 
 	// sidebar stuff
 	@FXML private VBox sidebar;
@@ -70,8 +71,7 @@ public class ViewController {
 	@FXML private RadioButton hexRadioButton;
 
 	@FXML private ComboBox<String> modelCBox;
-	@FXML private Text modelInfo;
-	@FXML private Text debugText;
+	@FXML private Label modelInfo;
 
 	@FXML private ColorPicker colorPicker;
 	@FXML private Button styleEditorButton;
@@ -369,6 +369,10 @@ public class ViewController {
 
 			resizeModel();
 		});
+
+		// Should bind width the sidebar width - insets, but this will do for now.
+		modelInfo.maxWidthProperty().bind(sidebar.widthProperty().subtract(20));
+		modelInfo.setText(model.description());
 	}
 
 	private void initColorMenu() {

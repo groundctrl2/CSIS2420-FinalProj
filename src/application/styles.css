@@ -38,7 +38,6 @@
 
 .app-label {
 	-fx-text-fill: TEXT-PRIMARY;
-	-fx-font-weight: bold;
 }
 
 .app-button, .cancel-button {
@@ -135,6 +134,7 @@
 	
 	-fx-spacing: 16;
 	-fx-min-width: 210;
+	-fx-max-width: 210;
 	-fx-padding: 10;
 }
 

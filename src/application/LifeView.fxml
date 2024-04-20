@@ -71,7 +71,7 @@
 		            labelOnLeft="false"
 		            min="3"
 		            max="400"
-		            value="10"
+		            value="16"
 		            />
 
 		<SpinnerBox fx:id="ncolsControl"
@@ -79,7 +79,7 @@
 		            labelOnLeft="false"
 		            min="3"
 		            max="500"
-		            value="20"
+		            value="32"
 		            />
 
 		<HBox id="dimensions-hbox">
@@ -148,7 +148,7 @@
 			<!-- Will be populated in the controller -->
 		</ComboBox>
 		
-		<Text id="model-info" fx:id="modelInfo" styleClass="app-text" />
+		<Label id="model-info" fx:id="modelInfo" styleClass="app-label" wrapText="true" />
 
 		<Region VBox.vgrow="ALWAYS" />                     <!-- spacer -->
 	</VBox>
