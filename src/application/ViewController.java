@@ -3,7 +3,7 @@ package application;
 import static javafx.scene.input.KeyCombination.keyCombination;
 
 import java.time.Duration;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import application.component.LiveStyleEditor;
 import application.component.SpinnerBox;
@@ -323,7 +323,7 @@ public class ViewController {
 	}
 
 	private void initModelSelectorBox() {
-		var table = new HashMap<String, Class<? extends ILife>>();
+		var table = new LinkedHashMap<String, Class<? extends ILife>>();
 
 		table.put("GraphLife", model.GraphLife.class);
 		table.put("SimpleLife", model.SimpleLife.class);
