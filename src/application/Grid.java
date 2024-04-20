@@ -2,6 +2,7 @@ package application;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -15,6 +16,7 @@ import model.ILife;
  */
 abstract class Grid {
 	final ViewController masterControl;
+	final ScrollPane container;
 	final Canvas canvas;
 	final GraphicsContext graphics;
 
@@ -30,8 +32,9 @@ abstract class Grid {
 
 	protected static final int CELL_BORDER_WIDTH = 1;
 
-	protected Grid(ViewController masterControl, Canvas canvas) {
+	protected Grid(ViewController masterControl, Canvas canvas, ScrollPane container) {
 		this.masterControl = masterControl;
+		this.container = container;
 		this.canvas = canvas;
 		this.graphics = canvas.getGraphicsContext2D();
 		// Enable click-to-toggle functionality.
@@ -116,8 +119,8 @@ abstract class Grid {
 	 * The classic rectangular grid, with <em>square</em> tiles.
 	 */
 	static class Classic extends Grid {
-		Classic(ViewController masterControl, Canvas canvas) {
-			super(masterControl, canvas);
+		Classic(ViewController masterControl, Canvas canvas, ScrollPane container) {
+			super(masterControl, canvas, container);
 		}
 
 		// For use by controller
@@ -164,6 +167,7 @@ abstract class Grid {
 		void redraw() {
 			double width = canvas.getWidth();
 			double height = canvas.getHeight();
+
 			/*
 			 * We could render each cell by using fillRect() followed by strokeRect() for
 			 * the cell borders. Alternatively, we can draw all the borders as grid lines
@@ -259,8 +263,8 @@ abstract class Grid {
 		/** This is used a lot for intermediate calculations */
 		private static final double SQRT3 = Math.sqrt(3);
 
-		Hex(ViewController masterControl, Canvas canvas) {
-			super(masterControl, canvas);
+		Hex(ViewController masterControl, Canvas canvas, ScrollPane container) {
+			super(masterControl, canvas, container);
 		}
 
 		@Override

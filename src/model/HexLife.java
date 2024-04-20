@@ -65,9 +65,18 @@ public class HexLife implements ILife {
 		int row = convertToRow(index);
 		int col = convertToCol(index);
 
+		/* This assumes that odd-rows are offset (i.e., shifted right) in the hex grid.
+		 * So even rows are missing their top-right and bottom-right neighbors (out of
+		 * the standard 8), and odd rows are missing the top-left and bottom-left.
+		 */
 		int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows};
 		int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};
-		int[][] neighbors = {{0, 1}, {0, 2}, {1, 0}, {1, 2}, {2, 1}, {2, 2}};
+		int[][] neighbors;
+
+		if (row % 2 == 0)
+			neighbors = new int[][] {{0, 0}, {0, 1}, {1, 0}, {1, 2}, {2, 0}, {2, 1}};
+		else
+			neighbors = new int[][] {{0, 1}, {0, 2}, {1, 0}, {1, 2}, {2, 1}, {2, 2}};
 
 		for (int[] neighbor : neighbors) {
 			int neighborIndex = convertToIndex(rowOffsets[neighbor[0]], colOffsets[neighbor[1]]);

@@ -59,15 +59,16 @@ public class ViewController {
 
 	// sidebar stuff
 	@FXML private VBox sidebar;
+	@FXML private SpinnerBox tpsControl;
+	@FXML private SpinnerBox cellSizeControl;
+	@FXML private SpinnerBox nrowsControl;
+	@FXML private SpinnerBox ncolsControl;
+	@FXML private ComboBox<String> gridDimensionsComboBox;
+
 	@FXML private ToggleGroup gridToggleGroup;
 	@FXML private RadioButton classicRadioButton;
 	@FXML private RadioButton hexRadioButton;
 
-	@FXML private SpinnerBox tpsControl;
-	@FXML private SpinnerBox nrowsControl;
-	@FXML private SpinnerBox ncolsControl;
-	@FXML private SpinnerBox cellSizeControl;
-	@FXML private ComboBox<String> gridDimensionsComboBox;
 	@FXML private ComboBox<String> modelCBox;
 	@FXML private Text modelInfo;
 	@FXML private Text debugText;
@@ -148,11 +149,11 @@ public class ViewController {
 
 	private void setGrid(Toggle selectedToggle) {
 		if (selectedToggle == classicRadioButton) {
-			grid = new Grid.Classic(this, canvas);
+			grid = new Grid.Classic(this, canvas, centerPane);
 			centerPane.getStyleClass().remove("hex-mode");
 		}
 		else {
-			grid = new Grid.Hex(this, canvas);
+			grid = new Grid.Hex(this, canvas, centerPane);
 			centerPane.getStyleClass().add("hex-mode");
 		}
 
@@ -326,6 +327,7 @@ public class ViewController {
 
 		table.put("AmoebaLife", model.AmoebaLife.class);
 		table.put("GraphLife", model.GraphLife.class);
+		table.put("HexLife", model.HexLife.class);
 		table.put("KnightLife", model.KnightLife.class);
 		table.put("LifeInColor", model.LifeInColor.class);
 		table.put("RockPaperScissorLife", model.RockPaperScissorLife.class);
