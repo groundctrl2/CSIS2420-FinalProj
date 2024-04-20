@@ -151,21 +151,21 @@
 				            label="cell size:"
 				            min="2"
 				            max="64"
-				            value="32"
+				            value="44"
 				            />
 
 				<SpinnerBox fx:id="nrowsControl"
 				            label="nrows:"
 				            min="3"
-				            max="400"
-				            value="18"
+		 		            max="400"
+				            value="10"
 				            />
 
 				<SpinnerBox fx:id="ncolsControl"
 				            label="ncols:"
 				            min="3"
 				            max="500"
-				            value="36"
+				            value="20"
 				            />
 
 				<ComboBox id="grid-dimensions-cbox" fx:id="gridDimensionsComboBox">
