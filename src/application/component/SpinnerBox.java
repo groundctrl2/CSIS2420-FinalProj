@@ -23,14 +23,19 @@ public class SpinnerBox extends HBox {
 	public SpinnerBox(@NamedArg("min") int min,
 	                  @NamedArg("max") int max,
 	                  @NamedArg("value") int value,
-	                  @NamedArg("label") String label) {
+	                  @NamedArg("label") String label,
+	                  @NamedArg(value="labelOnLeft", defaultValue="true") boolean labelOnLeft) {
 		this.spinner = new Spinner<>(min, max, value);
 		this.spinner.setEditable(true);
 		this.label = new Label(label);
 
 		addInputValidator(min, max, value);
 
-		this.getChildren().addAll(this.label, this.spinner);
+		if (labelOnLeft)
+			this.getChildren().addAll(this.label, this.spinner);
+		else
+			this.getChildren().addAll(this.spinner, this.label);
+
 		this.setSpacing(10);
 		this.getStyleClass().add("spinner-box");
 	}

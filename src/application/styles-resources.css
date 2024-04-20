@@ -8,12 +8,6 @@
 	src: url('../resources/fonts/Bungee-Regular.ttf');
 }
 
-/* placeholder icons */
-
-#toolbar .tbb-placeholder {
-	-fx-background-image: url('../resources/icons/placeholder-tool-icon-2-freepik.png');
-}
-
 #toolbar .constrained-color-picker {
 	-fx-background-image: url('../resources/icons/colors-icon-cropped-freepik.png');
 }
@@ -21,3 +15,4 @@
 #toolbar #style-editor {
 	-fx-background-image: url('../resources/icons/brackets-icon-edt_im.png');	
 }
+
