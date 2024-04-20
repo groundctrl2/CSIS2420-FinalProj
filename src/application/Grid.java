@@ -32,6 +32,8 @@ abstract class Grid {
 
 	protected static final int CELL_BORDER_WIDTH = 1;
 
+	private boolean modelNeedsResize;
+
 	protected Grid(ViewController masterControl, Canvas canvas, ScrollPane container) {
 		this.masterControl = masterControl;
 		this.container = container;
@@ -59,6 +61,8 @@ abstract class Grid {
 	}
 
 	void setSize(int nrows, int ncols, int cellSize) {
+		modelNeedsResize = (nrows != this.nrows || ncols != this.ncols);
+
 		this.nrows = nrows;
 		this.ncols = ncols;
 		this.setCellSize(cellSize);
@@ -75,7 +79,12 @@ abstract class Grid {
 	final void resize() {
 		resizeCanvas();
 		masterControl.recenterCanvas();
-		masterControl.resizeModel();
+
+		if (modelNeedsResize) {
+			masterControl.resizeModel();
+			modelNeedsResize = false;
+		}
+
 		redraw();
 	}
 
