@@ -47,7 +47,7 @@ public class LifeApp extends Application {
 			stage.setMaxWidth(bounds.getWidth());
 			stage.setMaxHeight(bounds.getHeight());
 
-			stage.setTitle("Version 1.0");
+			stage.setTitle("The Game of Life, Version 2");
 			stage.setScene(scene);
 			// Close any other windows if the main stage is closed.
 			stage.setOnHidden(e -> Platform.exit());
