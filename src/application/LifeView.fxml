@@ -63,7 +63,7 @@
 		            labelOnLeft="false"
 		            min="2"
 		            max="64"
-		            value="44"
+		            value="16"
 		            />
 
 		<SpinnerBox fx:id="nrowsControl"
@@ -71,7 +71,7 @@
 		            labelOnLeft="false"
 		            min="3"
 		            max="400"
-		            value="10"
+		            value="35"
 		            />
 
 		<SpinnerBox fx:id="ncolsControl"
@@ -79,7 +79,7 @@
 		            labelOnLeft="false"
 		            min="3"
 		            max="500"
-		            value="20"
+		            value="54"
 		            />
 
 		<HBox id="dimensions-hbox">
@@ -102,7 +102,7 @@
 		            labelOnLeft="false"
 		            min="1"
 		            max="60"
-		            value="2"
+		            value="8"
 		            />
 
 		<HBox id="toolbar">
@@ -135,13 +135,13 @@
 		             fx:id="classicRadioButton"
 		             text="Classic Grid"
 		             toggleGroup="$gridToggleGroup"
+		             selected="true"
 		             />
 
 		<RadioButton id="hex-radio-button"
 		             fx:id="hexRadioButton"
 		             text="Hex Grid"
 		             toggleGroup="$gridToggleGroup"
-		             selected="true"
 		             />
 
 		<ComboBox id="model-cbox" fx:id="modelCBox">
