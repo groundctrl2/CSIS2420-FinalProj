@@ -488,4 +488,11 @@ public class AmoebaLife implements ILife {
 				count++;
 		return count;
 	}
+	
+	/**
+	 * @return Description of this model
+	 */
+	public String description() {
+		return "Amoeba simulation.\nIncludes growth, mitosis, and hunger-based population control."; 
+	}
 }
