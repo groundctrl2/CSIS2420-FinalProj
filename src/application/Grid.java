@@ -2,6 +2,7 @@ package application;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -15,6 +16,7 @@ import model.ILife;
  */
 abstract class Grid {
 	final ViewController masterControl;
+	final ScrollPane container;
 	final Canvas canvas;
 	final GraphicsContext graphics;
 
@@ -30,8 +32,9 @@ abstract class Grid {
 
 	protected static final int CELL_BORDER_WIDTH = 1;
 
-	protected Grid(ViewController masterControl, Canvas canvas) {
+	protected Grid(ViewController masterControl, Canvas canvas, ScrollPane container) {
 		this.masterControl = masterControl;
+		this.container = container;
 		this.canvas = canvas;
 		this.graphics = canvas.getGraphicsContext2D();
 		// Enable click-to-toggle functionality.
@@ -116,8 +119,8 @@ abstract class Grid {
 	 * The classic rectangular grid, with <em>square</em> tiles.
 	 */
 	static class Classic extends Grid {
-		Classic(ViewController masterControl, Canvas canvas) {
-			super(masterControl, canvas);
+		Classic(ViewController masterControl, Canvas canvas, ScrollPane container) {
+			super(masterControl, canvas, container);
 		}
 
 		// For use by controller
@@ -164,6 +167,7 @@ abstract class Grid {
 		void redraw() {
 			double width = canvas.getWidth();
 			double height = canvas.getHeight();
+
 			/*
 			 * We could render each cell by using fillRect() followed by strokeRect() for
 			 * the cell borders. Alternatively, we can draw all the borders as grid lines
@@ -256,20 +260,68 @@ abstract class Grid {
 	 * A rectangular grid with <em>hexagonal</em> tiles.
 	 */
 	static class Hex extends Grid {
-		Hex(ViewController masterControl, Canvas canvas) {
-			super(masterControl, canvas);
+		/** This is used a lot for intermediate calculations */
+		private static final double SQRT3 = Math.sqrt(3);
 
-			// Disable click-to-toggle for now;
-			// Need to figure out conversion from pixels to (row, col)
-			canvas.setOnMouseClicked(null);
+		Hex(ViewController masterControl, Canvas canvas, ScrollPane container) {
+			super(masterControl, canvas, container);
 		}
 
 		@Override
 		int[] toRowColIndex(double x, double y) {
-			// This doesn't work.
-			int row = (int) (y / .75 / hexHeight());
-			int col = (int) ((x / hexWidth()) - ((row & 1) + 1) * 0.5);
-			return new int[] { row, col };
+			/* NOTE: The canvas coordinate has the center of the top-left hexagon
+			 * at (W/2, H/2) where W, H are the width and height of the hexagon.
+			 * The pixel to cube conversion algorithm assumes that the center is
+			 * (0, 0) in pixels. Therefore, we have to adjust the pixel coordinates
+			 * prior to use the conversion formulas.
+			 */
+			double x1 = x - hexWidth() / 2;
+			double y1 = y - hexHeight() / 2;
+			int[] index = redblob_pixelToRowColIndex(x1, y1);
+			/*
+			 * Instead of clamping, the #toggleDisplayCell() function below
+			 * will simply no-op on out-of-bounds.
+			 */
+			// index[0] = Math.clamp(index[0], 0, nrows - 1);
+			// index[1] = Math.clamp(index[1], 0, ncols - 1);
+			return index;
+		}
+
+		/**
+		 * Converts floating point (x, y) coordinates to (row, col) indices,
+		 * using algorithms from Amit Patel's excellent primer on hex grids.
+		 *
+		 * @see https://www.redblobgames.com/grids/hexagons/#hex-to-pixel
+		 */
+		private int[] redblob_pixelToRowColIndex(double x, double y) {
+			// pixel --> fractional cube coordinates
+			double frac_q = (SQRT3/3*x - 1.0/3*y) / hexSize();
+			double frac_r = 2.0/3.0*y       / hexSize();
+			double frac_s = -(frac_q + frac_r);
+
+			// round cube coordinates --> integer cube indices
+			long q = Math.round(frac_q);
+			long r = Math.round(frac_r);
+			long s = Math.round(frac_s);
+
+			double dq = Math.abs(q - frac_q);
+			double dr = Math.abs(r - frac_r);
+			double ds = Math.abs(s - frac_s);
+
+			if (dq > dr && dq > ds)
+				q = -(r + s);
+			else if (dr > ds)
+				r = -(q + s);
+			else
+				s = -(q + r);
+
+			assert q + r + s == 0: q + "|" + r + "|" + s;
+
+			// cube indices --> "odd-r" offset indices (row, col)
+			int col = Math.toIntExact(q + ((r - (r&1)) / 2));
+			int row = Math.toIntExact(r);
+
+			return new int[] {row, col};
 		}
 
 		/** Convert from row index to y-coordinate of the top point of hex interior */
@@ -281,17 +333,19 @@ abstract class Grid {
 
 		/** Convert from column index to x-coordinate of the top point of hex interior */
 		private double toXCoord(int row, int col) {
-			return CELL_BORDER_WIDTH + col*hexWidth() + rowOffset(row);
+			// For even rows, the offset is half the width.
+			// For odd rows, the offset is the width.
+			double offset = ((row & 1) + 1) * 0.5;
+			return CELL_BORDER_WIDTH + hexWidth() * (col + offset);
 		}
 
-		/**
-		 * For even rows, the offset is half the width.
-		 * For odd rows, the offset is the width.
+		/** Distance from center to corner of hexagon
 		 */
-		private double rowOffset(int row) {
-			return ((row & 1) + 1) * 0.5 * hexWidth();
+		private double hexSize() {
+			return cellSize / 2.0;
 		}
 
+		/** Distance from corner to corner */
 		private double hexHeight() {
 			return cellSize;
 		}
@@ -300,12 +354,13 @@ abstract class Grid {
 			return cellInteriorSize;
 		}
 
+		/** Distance from midpoint of one side to midpoint of opposing side. */
 		private double hexWidth() {
-			return Math.sqrt(3) / 2 * cellSize;
+			return SQRT3 / 2 * cellSize;
 		}
 
 		private double hexInteriorWidth() {
-			return Math.sqrt(3) / 2 * cellInteriorSize;
+			return SQRT3 / 2 * cellInteriorSize;
 		}
 
 		private void drawHexTile(int row, int col, Paint interiorFill) {
@@ -335,7 +390,7 @@ abstract class Grid {
 		@Override
 		protected void resizeCanvas() {
 			canvas.setWidth((ncols + 0.5) * hexWidth());
-			canvas.setHeight((0.75 * nrows + 1) * hexHeight());
+			canvas.setHeight((0.75*nrows + 0.25) * hexHeight());
 		}
 
 		/**
@@ -347,8 +402,7 @@ abstract class Grid {
 			double width = canvas.getWidth();
 			double height = canvas.getHeight();
 
-			graphics.setFill(masterControl.getRootBackgroundColor());
-			graphics.fillRect(0, 0, width, height);
+			graphics.clearRect(0, 0, width, height);
 
 			var model = masterControl.getModel();
 
@@ -371,13 +425,17 @@ abstract class Grid {
 			int row = index[0];
 			int col = index[1];
 
+			// Don't do anything if user clicked outside of hex grid.
+			if (row < 0 || row >= nrows || col < 0 || col >= ncols)
+				return;
+
 			var model = masterControl.getModel();
 
 			if (model.get(row, col) == CellState.DEAD) {
 				model.set(row, col, CellState.ALIVE);
 				drawHexTile(row, col, primaryColor);
 			}
-			else { // (model.get(row, col) != CellState.DEAD)
+			else {
 				model.set(row,  col, CellState.DEAD);
 				drawHexTile(row, col, Color.WHITE);
 			}

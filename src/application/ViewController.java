@@ -16,7 +16,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 import model.ILife;
 
@@ -29,9 +28,6 @@ import model.ILife;
  */
 public class ViewController {
 	/*
-	 * For convenience, we hold a handle to each major component in the scene graph,
-	 * even though some are currently not used directly.
-	 *
 	 * Each @FXML annotated variable is injected from the FXML file by the
 	 * FXMLLoader using the 'fx:id' attributes of each element as the name for the
 	 * target instance variable.
@@ -44,7 +40,8 @@ public class ViewController {
 	// ==================
 	// Component handles
 	// ==================
-	@FXML private BorderPane root;
+	@FXML private HBox root;
+	@FXML private BorderPane mainArea;
 
 	// top stuff
 	@FXML private HBox topBox;
@@ -55,29 +52,27 @@ public class ViewController {
 	@FXML private Canvas canvas;
 
 	// bottom stuff
-	@FXML private VBox bottomBox;
 	@FXML private Button clearButton;
 	@FXML private Button randomButton;
 	@FXML private Button pausePlayButton;
 	@FXML private Button stepButton;
 
-	@FXML private ComboBox<String> modelCBox;
+	// sidebar stuff
+	@FXML private VBox sidebar;
+	@FXML private SpinnerBox tpsControl;
+	@FXML private SpinnerBox cellSizeControl;
+	@FXML private SpinnerBox nrowsControl;
+	@FXML private SpinnerBox ncolsControl;
+	@FXML private ComboBox<String> gridDimensionsComboBox;
+
 	@FXML private ToggleGroup gridToggleGroup;
 	@FXML private RadioButton classicRadioButton;
 	@FXML private RadioButton hexRadioButton;
 
-	@FXML private SpinnerBox tpsControl;
-	@FXML private SpinnerBox nrowsControl;
-	@FXML private SpinnerBox ncolsControl;
-	@FXML private SpinnerBox cellSizeControl;
-	@FXML private ComboBox<String> gridDimensionsComboBox;
+	@FXML private ComboBox<String> modelCBox;
+	@FXML private Text modelInfo;
 	@FXML private Text debugText;
 
-
-	// ==================
-	// Toolbar stuff
-	// ==================
-	@FXML private ToolBar toolbar;
 	@FXML private ColorPicker colorPicker;
 	@FXML private Button styleEditorButton;
 
@@ -107,15 +102,20 @@ public class ViewController {
 	public void initialize() {
 		initCanvasAndGrid();
 		initButtonHandlers();
-		initTpsControls();
-		initGridSizeControls();
-		initModelSelectorBox();
-		initToolBar();
+		initSidebar();
+
+		// By default the sidebar is hidden.
+		// `T` or `CTRL+T` to toggle it.
+		sidebar.setVisible(false);
+		sidebar.setManaged(false);
+
+		// `CTRL+D` to toggle debug text
+		debugText.setVisible(false);
+		debugText.setManaged(false);
 
 		// The scene isn't set until after initialization, so run later.
 		Platform.runLater(this::installHotkeys);
 	}
-
 
 	/**
 	 * Initializes the canvas.
@@ -124,6 +124,9 @@ public class ViewController {
 		// Bind canvas container dimensions to the canvas dimensions.
 		centerPane.maxWidthProperty().bind(canvas.widthProperty());
 		centerPane.maxHeightProperty().bind(canvas.heightProperty());
+		// Not sure if this helps with the edges?
+		centerPane.prefViewportWidthProperty().bind(canvas.widthProperty());
+		centerPane.prefViewportHeightProperty().bind(canvas.heightProperty());
 
 		// subscribe() will also immediately fire and init the grid
 		gridToggleGroup.selectedToggleProperty().subscribe(this::setGrid);
@@ -145,10 +148,14 @@ public class ViewController {
 	}
 
 	private void setGrid(Toggle selectedToggle) {
-		if (selectedToggle == classicRadioButton)
-			grid = new Grid.Classic(this, canvas);
-		else
-			grid = new Grid.Hex(this, canvas);
+		if (selectedToggle == classicRadioButton) {
+			grid = new Grid.Classic(this, canvas, centerPane);
+			centerPane.getStyleClass().remove("hex-mode");
+		}
+		else {
+			grid = new Grid.Hex(this, canvas, centerPane);
+			centerPane.getStyleClass().add("hex-mode");
+		}
 
 		// Set initial values of the grid to the initial values in the controls.
 		int nrows = nrowsControl.spinner.getValue();
@@ -261,8 +268,12 @@ public class ViewController {
 		grid.redraw();
 	}
 
-	Paint getRootBackgroundColor() {
-		return Color.web("#576F8D");
+	private void initSidebar() {
+		initGridSizeControls();
+		initTpsControls();
+		initModelSelectorBox();
+		initColorMenu();
+		initLiveStyleEditor();
 	}
 
 	private void initTpsControls() {
@@ -312,28 +323,32 @@ public class ViewController {
 	}
 
 	private void initModelSelectorBox() {
-		var items = modelCBox.getItems();
-		var lookupTable = new HashMap<String, Class<? extends ILife>>();
+		var table = new HashMap<String, Class<? extends ILife>>();
 
-		/*
-		 * Add the name of each concrete model class to the combo box,
-		 * and link the name to the actual class object in a map.
-		 */
-		for (var cls : ILife.implementations()) {
-			String key = cls.getSimpleName();
-			items.add(key);
-			lookupTable.put(key, cls);
-		}
+		table.put("AmoebaLife", model.AmoebaLife.class);
+		table.put("GraphLife", model.GraphLife.class);
+		table.put("HexLife", model.HexLife.class);
+		table.put("KnightLife", model.KnightLife.class);
+		table.put("LifeInColor", model.LifeInColor.class);
+		table.put("RockPaperScissorLife", model.RockPaperScissorLife.class);
+		table.put("SimpleLife", model.SimpleLife.class);
+		table.put("VampireLife", model.VampireLife.class);
+		table.put("ZombieLife", model.ZombieLife.class);
+
+		var items = modelCBox.getItems();
+
+		for (var name : table.keySet())
+			items.add(name);
 
 		// Set the current value to the current model's class.
 		String currentSelection = model.getClass().getSimpleName();
-		assert lookupTable.containsKey(currentSelection): currentSelection;
+		assert table.containsKey(currentSelection): currentSelection;
 		modelCBox.setValue(currentSelection);
 
 		// Update the model whenever the combo box value changes.
 		modelCBox.setOnAction(event -> {
 			var className = modelCBox.getValue();
-			var selectedClass = lookupTable.get(className);
+			var selectedClass = table.get(className);
 
 			if (selectedClass.equals(model.getClass())) {
 				debugText.setText("No change");
@@ -342,35 +357,18 @@ public class ViewController {
 
 			try {
 				model = selectedClass.getConstructor().newInstance();
+
+				var desc = model.description();
+
+				if (desc != null)
+					modelInfo.setText(desc);
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
 			resizeModel();
 		});
-	}
-
-	private void initToolBar() {
-		for (var item : toolbar.getItems()) {
-			if (item instanceof Labeled labeled) {
-				var tip = new Tooltip(labeled.getText());
-				tip.setShowDelay(javafx.util.Duration.millis(200));
-				labeled.setTooltip(tip);
-			}
-
-			if (item instanceof Button button) {
-				button.setOnAction(e -> {
-					debugText.setText("'" + button.getId() + "' not implemented yet!");
-				});
-			}
-		}
-
-		initColorMenu();
-		initLiveStyleEditor();
-
-		// Hide toolbar while it's unfinished.
-		toolbar.setVisible(false);
-		toolbar.setManaged(false);
 	}
 
 	private void initColorMenu() {
@@ -391,6 +389,10 @@ public class ViewController {
 			grid.primaryColor = color;
 			grid.redraw();
 		});
+
+		var tip = new Tooltip("Select color");
+		tip.setShowDelay(javafx.util.Duration.millis(200));
+		colorPicker.setTooltip(tip);
 	}
 
 	private void initLiveStyleEditor() {
@@ -405,6 +407,11 @@ public class ViewController {
 				debugText.setText("Unable to launch style editor");
 			}
 		});
+
+		var tip = new Tooltip(styleEditorButton.getText());
+		tip.setShowDelay(javafx.util.Duration.millis(200));
+		styleEditorButton.setTooltip(tip);
+
 	}
 
 	private void installHotkeys() {
@@ -412,20 +419,18 @@ public class ViewController {
 
 		acc.put(keyCombination("Shortcut+P"), pausePlayButton::requestFocus);
 		acc.put(keyCombination("P"), pausePlayButton::fire);
-		acc.put(keyCombination("PLAY"), pausePlayButton::fire);
-		acc.put(keyCombination("PAUSE"), pausePlayButton::fire);
 		// acc.put(keyCombination("Shift+Comma"), backButton::fire);  // '<'
-		// acc.put(keyCombination("b"), backButton::fire);
+		// acc.put(keyCombination("B"), backButton::fire);
 		acc.put(keyCombination("Shift+Period"), stepButton::fire);  // '>'
 		acc.put(keyCombination("F"), stepButton::fire);
 		acc.put(keyCombination("Shift+C"), clearButton::fire);
 		acc.put(keyCombination("Shift+R"), randomButton::fire);
 
-		acc.put(keyCombination("Close Bracket"), () -> {  // ']'
+		acc.put(keyCombination("Ignore Shortcut+Close Bracket"), () -> {  // ']'
 			tpsControl.setValue(ticksPerSecond + 1);
 		});
 
-		acc.put(keyCombination("Open Bracket"), () -> {  // '['
+		acc.put(keyCombination("Ignore Shortcut+Open Bracket"), () -> {  // '['
 			tpsControl.setValue(ticksPerSecond - 1);
 		});
 
@@ -437,14 +442,19 @@ public class ViewController {
 			cellSizeControl.spinner.decrement();
 		});
 
-		acc.put(keyCombination("Shortcut+o"), () -> {
+		acc.put(keyCombination("Shortcut+O"), () -> {
 			debugText.setText("Return to origin");
 			recenterCanvas();
 		});
 
-		acc.put(keyCombination("Shortcut+t"), () -> {
-			toolbar.setManaged(!toolbar.isManaged());
-			toolbar.setVisible(!toolbar.isVisible());
+		acc.put(keyCombination("Ignore Shortcut+T"), () -> {
+			sidebar.setManaged(!sidebar.isManaged());
+			sidebar.setVisible(!sidebar.isVisible());
+		});
+
+		acc.put(keyCombination("Shortcut+D"), () -> {
+			debugText.setManaged(!debugText.isManaged());
+			debugText.setVisible(!debugText.isVisible());
 		});
 	}
 }

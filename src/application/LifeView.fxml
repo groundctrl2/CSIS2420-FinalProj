@@ -12,87 +12,100 @@
 
 <?import application.component.*?>
 
-<BorderPane id="app-root"
-	        stylesheets="@styles.css, @styles-resources.css"
-	        fx:controller="application.ViewController"
-	        fx:id="root"
-	        xmlns="http://javafx.com/javafx/21"
-	        xmlns:fx="http://javafx.com/fxml/1"
-	        >
-	<top>
-		<HBox id="top-box" fx:id="topBox" BorderPane.alignment="CENTER">
-			<Text id="title-text" fx:id="titleText" styleClass="big-text" text="THE GAME OF LIFE" />
+<HBox id="app-root"
+      fx:id="root"
+      stylesheets="@styles.css, @styles-resources.css"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="application.ViewController"
+      >
+	<BorderPane id="main-area" fx:id="mainArea" HBox.hgrow="ALWAYS">
+		<top>
+			<HBox id="top-box" fx:id="topBox" BorderPane.alignment="CENTER">
+				<Text id="title-text" fx:id="titleText" styleClass="big-text" text="THE GAME OF LIFE" />
+			</HBox>
+		</top>
+	
+		<center>
+			<ScrollPane id="center-pane"
+			            fx:id="centerPane"
+			            BorderPane.alignment="CENTER"
+			            hvalue="0.5"
+			            vvalue="0.5"
+			            >
+				<Canvas fx:id="canvas" />
+			</ScrollPane>
+		</center>
+
+		<bottom>
+			<VBox id="bottom-box" fx:id="bottomBox" BorderPane.alignment="CENTER">
+				<HBox id="main-controls-bar" fx:id="mainControlsBar">
+					<Button id="clear-button"      fx:id="clearButton"     styleClass="cancel-button" text="CLEAR" />
+					<Button id="random-button"     fx:id="randomButton"    styleClass="cancel-button" text="RANDOM" />
+					<Button id="pause-play-button" fx:id="pausePlayButton" styleClass="app-button" text="PLAY" />
+					<Button id="step-button"       fx:id="stepButton"      styleClass="app-button" text="STEP" />
+				</HBox>
+	
+				<HBox id="debug-group" fx:id="debugGroup">
+					<Text id="debug-text" fx:id="debugText"
+					      text="Nothing to report"
+					      />
+				</HBox>
+			</VBox>
+		</bottom>
+	</BorderPane>
+
+	<VBox id="sidebar" fx:id="sidebar">
+		<Region VBox.vgrow="ALWAYS" />                     <!-- spacer -->
+		
+		<SpinnerBox fx:id="cellSizeControl"
+		            label="Cell size"
+		            labelOnLeft="false"
+		            min="2"
+		            max="64"
+		            value="44"
+		            />
+
+		<SpinnerBox fx:id="nrowsControl"
+		            label="Rows"
+		            labelOnLeft="false"
+		            min="3"
+		            max="400"
+		            value="10"
+		            />
+
+		<SpinnerBox fx:id="ncolsControl"
+		            label="Columns"
+		            labelOnLeft="false"
+		            min="3"
+		            max="500"
+		            value="20"
+		            />
+
+		<HBox id="dimensions-hbox">
+			<Label text="Dimensions:" labelFor="$gridDimensionsComboBox" />
+
+			<ComboBox id="grid-dimensions-cbox" fx:id="gridDimensionsComboBox">
+				<items>
+					<FXCollections fx:factory="observableArrayList">
+						<String fx:value="10x20" />
+						<String fx:value="25x50" />
+						<String fx:value="50x100" />
+						<String fx:value="80x120" />
+					</FXCollections>
+				</items>
+			</ComboBox>
 		</HBox>
-	</top>
 
-	<center>
-		<ScrollPane id="center-pane"
-		            fx:id="centerPane"
-		            BorderPane.alignment="CENTER"
-		            hvalue="0.5"
-		            vvalue="0.5"
-		            >
-			<Canvas fx:id="canvas" />
-		</ScrollPane>
-	</center>
+		<SpinnerBox fx:id="tpsControl"
+		            label="Ticks / sec"
+		            labelOnLeft="false"
+		            min="1"
+		            max="60"
+		            value="2"
+		            />
 
-	<right>
-	<StackPane>
-		<ToolBar id="toolbar" fx:id="toolbar">
-			<Button id="mode-selector"
-			        fx:id="modeSelectorButton"
-			        styleClass="tbb, tbb-placeholder"
-			        text="Change mode"
-			        />
-
-			<Button id="zoom-tool"
-			        fx:id="zoomToolButton"
-			        styleClass="tbb, tbb-placeholder"
-			        text="Zoom / Scale / Pan"
-			        />
-
-			<Button id="spawn-tool"
-			        fx:id="spawnToolButton"
-			        styleClass="tbb, tbb-placeholder"
-			        text="Spawn tool"
-			        />
-
-			<Button id="smite-tool"
-			        fx:id="smiteToolButton"
-			        styleClass="tbb, tbb-placeholder"
-			        text="Smite tool"
-			        />
-
-			<Button id="toggler"
-			        fx:id="togglerButton"
-			        styleClass="tbb, tbb-placeholder"
-			        text="Toggle tool"
-			        />
-
-			<Button id="randomizer"
-			        fx:id="randomizerButton"
-			        styleClass="tbb, tbb-placeholder"
-			        text="Randomizer"
-			        />
-
-			<Button id="stamper"
-			        fx:id="stamperButton"
-			        styleClass="tbb, tbb-placeholder"
-			        text="Stamp tool"
-			        />
-
-			<Button id="selection-tool"
-			        fx:id="selectionTool"
-			        styleClass="tbb, tbb-placeholder"
-			        text="Selection tool"
-			        />
-
-			<Button id="style-editor"
-			        fx:id="styleEditorButton"
-			        styleClass="tbb"
-			        text="Edit Style"
-			        />
-
+		<HBox id="toolbar">
 			<!-- Use FX Color Picker instead?
 			<ConstrainedColorPicker id="color-picker"
 			                        fx:id="colorPicker" 
@@ -106,93 +119,37 @@
 			             fx:id="colorPicker"
 			             styleClass="tbb"
 			             />
-		</ToolBar>
-		</StackPane>
-	</right>
 
-	<bottom>
-		<VBox id="bottom-box" fx:id="bottomBox" BorderPane.alignment="CENTER">
-			<HBox id="main-control-bar" fx:id="mainControlBar">
-				<Button id="clear-button"      fx:id="clearButton"     styleClass="cancel-button" text="CLEAR" />
-				<Button id="random-button"     fx:id="randomButton"    styleClass="cancel-button" text="RANDOM" />
-				<Button id="pause-play-button" fx:id="pausePlayButton" styleClass="app-button" text="PLAY" />
-				<Button id="step-button"       fx:id="stepButton"      styleClass="app-button" text="STEP" />
-			</HBox>
+			<Button id="style-editor"
+			        fx:id="styleEditorButton"
+			        styleClass="tbb"
+			        text="Edit Style"
+			        />
+		</HBox>
 
-			<HBox id="secondary-controls-1" fx:id="secondaryControls1">
-				<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
+		<fx:define>
+			<ToggleGroup fx:id="gridToggleGroup" />
+		</fx:define>
 
-				<ComboBox id="model-cbox" fx:id="modelCBox">
-					<!-- Will be populated in the controller -->
-				</ComboBox>
-				
-				<fx:define>
-					<ToggleGroup fx:id="gridToggleGroup" />
-				</fx:define>
+		<RadioButton id="classic-radio-button"
+		             fx:id="classicRadioButton"
+		             text="Classic Grid"
+		             toggleGroup="$gridToggleGroup"
+		             />
 
-				<RadioButton id="classic-radio-button"
-				             fx:id="classicRadioButton"
-				             text="Classic Grid"
-				             toggleGroup="$gridToggleGroup"
-				             selected="true"
-				             />
+		<RadioButton id="hex-radio-button"
+		             fx:id="hexRadioButton"
+		             text="Hex Grid"
+		             toggleGroup="$gridToggleGroup"
+		             selected="true"
+		             />
 
-				<RadioButton id="hex-radio-button"
-				             fx:id="hexRadioButton"
-				             text="Hex Grid"
-				             toggleGroup="$gridToggleGroup"
-				             />
-				
-				<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
-			</HBox>
-			
-			<HBox id="secondary-controls-2" fx:id="secondaryControls2">
-				<SpinnerBox fx:id="cellSizeControl"
-				            label="cell size:"
-				            min="2"
-				            max="64"
-				            value="16"
-				            />
+		<ComboBox id="model-cbox" fx:id="modelCBox">
+			<!-- Will be populated in the controller -->
+		</ComboBox>
+		
+		<Text id="model-info" fx:id="modelInfo" styleClass="app-text" />
 
-				<SpinnerBox fx:id="nrowsControl"
-				            label="nrows:"
-				            min="3"
-				            max="400"
-				            value="30"
-				            />
-
-				<SpinnerBox fx:id="ncolsControl"
-				            label="ncols:"
-				            min="3"
-				            max="500"
-				            value="64"
-				            />
-
-				<ComboBox id="grid-dimensions-cbox" fx:id="gridDimensionsComboBox">
-					<items>
-						<FXCollections fx:factory="observableArrayList">
-							<String fx:value="10x20" />
-							<String fx:value="25x50" />
-							<String fx:value="50x100" />
-							<String fx:value="80x120" />
-						</FXCollections>
-					</items>
-				</ComboBox>
-				
-				<SpinnerBox fx:id="tpsControl"
-				            label="Ticks per second:"
-				            min="1"
-				            max="60"
-				            value="8"
-				            />
-			</HBox>
-
-			<HBox id="debug-group" fx:id="debugGroup">
-				<Text id="debug-text" fx:id="debugText"
-				      text="Nothing to report"
-				      BorderPane.alignment="CENTER_LEFT"
-				      />
-			</HBox>
-		</VBox>
-	</bottom>
-</BorderPane>
+		<Region VBox.vgrow="ALWAYS" />                     <!-- spacer -->
+	</VBox>
+</HBox>
