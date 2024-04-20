@@ -185,4 +185,11 @@ public class HexLife implements ILife {
 
 		return count;
 	}
+	
+	/**
+	 * @return Description of this model
+	 */
+	public String description() {
+		return "Hex-Grid Game of Life.\nCells swap states if they have exactly 2 alive neighbors."; 
+	}
 }

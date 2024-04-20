@@ -148,4 +148,11 @@ public class SparseLife implements ILife {
 	public long populationCount() {
 		return liveSet.size();
 	}
+	
+	/**
+	 * @return Description of this model
+	 */
+	public String description() {
+		return "Conway's Game of Life.\nImplemented using a set storing the locations of live cells."; 
+	}
 }

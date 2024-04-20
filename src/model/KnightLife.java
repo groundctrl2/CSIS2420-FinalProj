@@ -186,4 +186,11 @@ public class KnightLife implements ILife {
 
 		return count;
 	}
+	
+	/**
+	 * @return Description of this model
+	 */
+	public String description() {
+		return "Knight's Game of Life.\nNeighbors are a chess knight's move apart."; 
+	}
 }
