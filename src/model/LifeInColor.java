@@ -5,6 +5,13 @@ import java.util.Arrays;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 
+/**
+ * A graph-based implementation of Conway's Game of Life (classic ruleset
+ * B3/S23) but with 3 games stacked on top of each other (one for each color).
+ * 
+ * @author Tommy Collier
+ * @author Paul Nguyen
+ */
 public class LifeInColor implements ILife {
 	private Graph world;
 	private CellState[] cells; // row-col indexed
@@ -68,8 +75,8 @@ public class LifeInColor implements ILife {
 		int row = convertToRow(index);
 		int col = convertToCol(index);
 
-		int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows};
-		int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};
+		int[] rowOffsets = { (row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows };
+		int[] colOffsets = { (col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols };
 
 		for (int r : rowOffsets)
 			for (int c : colOffsets)
@@ -159,7 +166,8 @@ public class LifeInColor implements ILife {
 			int col = convertToCol(current);
 
 			if (cells[current] == species) {
-				if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if between 2-3 neighbors.
+				if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if
+				                                              // between 2-3 neighbors.
 					queue.enqueue(new Cell(row, col, CellState.DEAD));
 			}
 			else { // if (cells[i].state() == CellState.DEAD)
@@ -203,11 +211,11 @@ public class LifeInColor implements ILife {
 
 		return count;
 	}
-	
+
 	/**
 	 * @return Description of this model
 	 */
 	public String description() {
-		return "Life In Color.\n3 games of the Game of Life stacked on top of each other."; 
+		return "Life In Color.\n3 games of the Game of Life stacked on top of each other.";
 	}
 }

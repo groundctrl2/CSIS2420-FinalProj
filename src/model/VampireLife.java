@@ -7,6 +7,13 @@ import edu.princeton.cs.algs4.BreadthFirstPaths;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 
+/**
+ * Using a graph-based implementation of Conway's Game of Life (classic ruleset
+ * B3/S23), 'Zombie' cells use BFS to attack all life.
+ * 
+ * @author Tommy Collier
+ * @author Paul Nguyen
+ */
 public class VampireLife implements ILife {
 	private Graph world;
 	private CellState[] cells; // row-col indexed
