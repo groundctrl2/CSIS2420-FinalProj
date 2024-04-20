@@ -18,7 +18,7 @@ import javafx.stage.Stage;
  *      layout (the scene graph) of the GUI.
  *   </li>
  *   <li>
- *      Then see <a href="styles.css">styles.css</a> for the stylesheet.
+ *      Then see <a href="styles.css">styles.css</a> for the main stylesheet.
  *   </li>
  *   <li>
  *      Finally, refer to {@link ViewController} for the behavior of the UI.
@@ -26,7 +26,7 @@ import javafx.stage.Stage;
  * </ol>
  *
  * @see #main
- * 
+ *
  * @author Paul Nguyen
  * @author Tommy Collier
  */
@@ -47,7 +47,7 @@ public class LifeApp extends Application {
 			stage.setMaxWidth(bounds.getWidth());
 			stage.setMaxHeight(bounds.getHeight());
 
-			stage.setTitle("Version 1.0");
+			stage.setTitle("The Game of Life, Version 2");
 			stage.setScene(scene);
 			// Close any other windows if the main stage is closed.
 			stage.setOnHidden(e -> Platform.exit());

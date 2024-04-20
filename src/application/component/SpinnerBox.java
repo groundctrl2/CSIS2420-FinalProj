@@ -12,8 +12,6 @@ import javafx.util.converter.IntegerStringConverter;
 
 /**
  * Simplifies the construction of a labeled integer spinner in FXML.
- *
- * @see https://stackoverflow.com/q/31248983
  */
 public class SpinnerBox extends HBox {
 	public final Spinner<Integer> spinner;
@@ -47,6 +45,7 @@ public class SpinnerBox extends HBox {
 		spinner.getValueFactory().setConverter(new IntegerStringConverter() {
 			@Override
 			public Integer fromString(String s) {
+				// allow empty input to equal 0,..which clamps to `min`.
 				if (s == null || s.isBlank())
 					return min;
 
@@ -63,12 +62,12 @@ public class SpinnerBox extends HBox {
 			var text = change.getControlNewText().strip();
 
 			if (text.isEmpty())
-				return change;
+				return change;  // accept empty input
 
 			try {
 				Integer.parseInt(text);
 			} catch (NumberFormatException e) {
-				return null; // reject change
+				return null;  // reject change
 			}
 
 			return change;
@@ -80,13 +79,18 @@ public class SpinnerBox extends HBox {
 	public int getValue() { return spinner.getValue(); }
 	public void setValue(int value) { spinner.getValueFactory().setValue(value); }
 
+	/**
+	 * Attaches a change listener to the spinner's value property.
+	 *
+	 * @param subscriber a callback that receives the new value of the spinner
+	 */
 	public void subscribe(IntConsumer subscriber) {
 		spinner.valueProperty().subscribe(newValue -> {
 			if (newValue == null)
 				return;
 
 			var vf = (IntegerSpinnerValueFactory) spinner.getValueFactory();
-			int clamped = Math.max(vf.getMin(), Math.min(newValue, vf.getMax()));
+			int clamped = Math.clamp(newValue, vf.getMin(), vf.getMax());
 			subscriber.accept(clamped);
 		});
 	}

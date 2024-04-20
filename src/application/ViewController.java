@@ -3,7 +3,6 @@ package application;
 import static javafx.scene.input.KeyCombination.keyCombination;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import application.component.LiveStyleEditor;
@@ -27,7 +26,7 @@ import model.ILife;
  * This class manages the interaction and facilitates communication between the
  * model (classes that run the simulation behind the scenes) and the view (the
  * visual display and UI components).
- * 
+ *
  * @author Paul Nguyen
  * @author Tommy Collier
  */
@@ -45,65 +44,42 @@ public class ViewController {
 	// ==================
 	// Component handles
 	// ==================
-	@FXML
-	private HBox root;
-	@FXML
-	private BorderPane mainArea;
+	@FXML private HBox root;
+	@FXML private BorderPane mainArea;
 
 	// top stuff
-	@FXML
-	private HBox topBox;
-	@FXML
-	private Text titleText;
+	@FXML private HBox topBox;
+	@FXML private Text titleText;
 
 	// center stuff
-	@FXML
-	private ScrollPane centerPane;
-	@FXML
-	private Canvas canvas;
+	@FXML private ScrollPane centerPane;
+	@FXML private Canvas canvas;
 
 	// bottom stuff
-	@FXML
-	private Button clearButton;
-	@FXML
-	private Button randomButton;
-	@FXML
-	private Button pausePlayButton;
-	@FXML
-	private Button stepButton;
+	@FXML private Button clearButton;
+	@FXML private Button randomButton;
+	@FXML private Button pausePlayButton;
+	@FXML private Button stepButton;
+	@FXML private Button sidebarToggle;
+	@FXML private Text debugText;
 
 	// sidebar stuff
-	@FXML
-	private VBox sidebar;
-	@FXML
-	private SpinnerBox tpsControl;
-	@FXML
-	private SpinnerBox cellSizeControl;
-	@FXML
-	private SpinnerBox nrowsControl;
-	@FXML
-	private SpinnerBox ncolsControl;
-	@FXML
-	private ComboBox<String> gridDimensionsComboBox;
+	@FXML private VBox sidebar;
+	@FXML private SpinnerBox tpsControl;
+	@FXML private SpinnerBox cellSizeControl;
+	@FXML private SpinnerBox nrowsControl;
+	@FXML private SpinnerBox ncolsControl;
+	@FXML private ComboBox<String> gridDimensionsComboBox;
 
-	@FXML
-	private ToggleGroup gridToggleGroup;
-	@FXML
-	private RadioButton classicRadioButton;
-	@FXML
-	private RadioButton hexRadioButton;
+	@FXML private ToggleGroup gridToggleGroup;
+	@FXML private RadioButton classicRadioButton;
+	@FXML private RadioButton hexRadioButton;
 
-	@FXML
-	private ComboBox<String> modelCBox;
-	@FXML
-	private Text modelInfo;
-	@FXML
-	private Text debugText;
+	@FXML private ComboBox<String> modelCBox;
+	@FXML private Label modelInfo;
 
-	@FXML
-	private ColorPicker colorPicker;
-	@FXML
-	private Button styleEditorButton;
+	@FXML private ColorPicker colorPicker;
+	@FXML private Button styleEditorButton;
 
 	// ==================
 	// Grid/Canvas stuff
@@ -178,6 +154,9 @@ public class ViewController {
 		});
 	}
 
+	/**
+	 * Sets the grid type based on the selected radio button/toggle.
+	 */
 	private void setGrid(Toggle selectedToggle) {
 		if (selectedToggle == classicRadioButton) {
 			grid = new Grid.Classic(this, canvas, centerPane);
@@ -305,6 +284,13 @@ public class ViewController {
 		initModelSelectorBox();
 		initColorMenu();
 		initLiveStyleEditor();
+
+		sidebarToggle.setTooltip(newTooltip("Toggle sidebar (T or Ctrl+T)"));
+
+		sidebarToggle.setOnAction(e -> {
+			sidebar.setManaged(!sidebar.isManaged());
+			sidebar.setVisible(!sidebar.isVisible());
+		});
 	}
 
 	private void initTpsControls() {
@@ -359,8 +345,8 @@ public class ViewController {
 
 		table.put("GraphLife", model.GraphLife.class);
 		table.put("SimpleLife", model.SimpleLife.class);
-		table.put("HexLife", model.HexLife.class);
 		table.put("KnightLife", model.KnightLife.class);
+		table.put("HexLife", model.HexLife.class);
 		table.put("LifeInColor", model.LifeInColor.class);
 		table.put("RockPaperScissorLife", model.RockPaperScissorLife.class);
 		table.put("VampireLife", model.VampireLife.class);
@@ -402,6 +388,10 @@ public class ViewController {
 
 			resizeModel();
 		});
+
+		// Should bind width to (sidebar width - insets), but this will do for now.
+		modelInfo.maxWidthProperty().bind(sidebar.widthProperty().subtract(20));
+		modelInfo.setText(model.description());
 	}
 
 	private void initColorMenu() {
@@ -423,9 +413,7 @@ public class ViewController {
 			grid.redraw();
 		});
 
-		var tip = new Tooltip("Select color");
-		tip.setShowDelay(javafx.util.Duration.millis(200));
-		colorPicker.setTooltip(tip);
+		colorPicker.setTooltip(newTooltip("Select color"));
 	}
 
 	private void initLiveStyleEditor() {
@@ -441,10 +429,13 @@ public class ViewController {
 			}
 		});
 
-		var tip = new Tooltip(styleEditorButton.getText());
-		tip.setShowDelay(javafx.util.Duration.millis(200));
-		styleEditorButton.setTooltip(tip);
+		styleEditorButton.setTooltip(newTooltip(styleEditorButton.getText()));
+	}
 
+	private Tooltip newTooltip(String text) {
+		var tip = new Tooltip(text);
+		tip.setShowDelay(javafx.util.Duration.millis(200));
+		return tip;
 	}
 
 	private void installHotkeys() {

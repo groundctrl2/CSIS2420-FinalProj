@@ -25,7 +25,7 @@
 				<Text id="title-text" fx:id="titleText" styleClass="big-text" text="THE GAME OF LIFE" />
 			</HBox>
 		</top>
-	
+
 		<center>
 			<ScrollPane id="center-pane"
 			            fx:id="centerPane"
@@ -36,16 +36,22 @@
 				<Canvas fx:id="canvas" />
 			</ScrollPane>
 		</center>
-
+		
 		<bottom>
 			<VBox id="bottom-box" fx:id="bottomBox" BorderPane.alignment="CENTER">
 				<HBox id="main-controls-bar" fx:id="mainControlsBar">
+					<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
+
 					<Button id="clear-button"      fx:id="clearButton"     styleClass="cancel-button" text="CLEAR" />
 					<Button id="random-button"     fx:id="randomButton"    styleClass="cancel-button" text="RANDOM" />
 					<Button id="pause-play-button" fx:id="pausePlayButton" styleClass="app-button" text="PLAY" />
 					<Button id="step-button"       fx:id="stepButton"      styleClass="app-button" text="STEP" />
+
+					<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
+					
+					<Button id="sidebar-toggle"    fx:id="sidebarToggle" text="..." />
 				</HBox>
-	
+
 				<HBox id="debug-group" fx:id="debugGroup">
 					<Text id="debug-text" fx:id="debugText"
 					      text="Nothing to report"
@@ -57,7 +63,7 @@
 
 	<VBox id="sidebar" fx:id="sidebar">
 		<Region VBox.vgrow="ALWAYS" />                     <!-- spacer -->
-		
+
 		<SpinnerBox fx:id="cellSizeControl"
 		            label="Cell size"
 		            labelOnLeft="false"
@@ -108,13 +114,13 @@
 		<HBox id="toolbar">
 			<!-- Use FX Color Picker instead?
 			<ConstrainedColorPicker id="color-picker"
-			                        fx:id="colorPicker" 
+			                        fx:id="colorPicker"
 			                        styleClass="tbb"
 			                        popupSide="RIGHT"
-			                        text="Select color" 
+			                        text="Select color"
 			                        />
 			-->
-			
+
 			<ColorPicker id="color-picker"
 			             fx:id="colorPicker"
 			             styleClass="tbb"
@@ -147,8 +153,8 @@
 		<ComboBox id="model-cbox" fx:id="modelCBox">
 			<!-- Will be populated in the controller -->
 		</ComboBox>
-		
-		<Text id="model-info" fx:id="modelInfo" styleClass="app-text" />
+
+		<Label id="model-info" fx:id="modelInfo" styleClass="app-label" wrapText="true" />
 
 		<Region VBox.vgrow="ALWAYS" />                     <!-- spacer -->
 	</VBox>

@@ -11,9 +11,16 @@ import model.ILife;
 
 /**
  * Abstract base class for rectangular grids.
+ * <p>
+ * This class is a just a thin wrapper over the controller's canvas. It handles
+ * the visual display of the data in the controller's model.
+ * <p>
+ * Originally, all of this code was in the controller, but for ease of switching
+ * between grid types, it was moved out. It is still heavily tied to the
+ * {@link ViewController} class.
  *
- * @see Grid#Classic
- * 
+ * @see Grid.Classic
+ * @see Grid.Hex
  * @author Paul Nguyen
  * @author Tommy Collier
  */
@@ -34,6 +41,8 @@ abstract class Grid {
 	protected int cellInteriorSize;
 
 	protected static final int CELL_BORDER_WIDTH = 1;
+
+	private boolean modelNeedsResize;
 
 	protected Grid(ViewController masterControl, Canvas canvas, ScrollPane container) {
 		this.masterControl = masterControl;
@@ -67,6 +76,8 @@ abstract class Grid {
 	}
 
 	void setSize(int nrows, int ncols, int cellSize) {
+		modelNeedsResize = (nrows != this.nrows || ncols != this.ncols);
+
 		this.nrows = nrows;
 		this.ncols = ncols;
 		this.setCellSize(cellSize);
@@ -83,7 +94,12 @@ abstract class Grid {
 	final void resize() {
 		resizeCanvas();
 		masterControl.recenterCanvas();
-		masterControl.resizeModel();
+
+		if (modelNeedsResize) {
+			masterControl.resizeModel();
+			modelNeedsResize = false;
+		}
+
 		redraw();
 	}
 

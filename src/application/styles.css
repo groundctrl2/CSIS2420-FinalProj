@@ -1,8 +1,9 @@
 /* Styles for the scene graph in LifeView.fxml
  *
  * Relative/local resource-based styles are currently placed in a separate
- * stylesheet to allow the live style-editor to function.
+ * stylesheet (style-resources.css) to allow the live style-editor to function.
  */
+ 
 .root {
 	/*
 	 * Apparently FX doesn't (currently?) support CSS variables, but does
@@ -38,10 +39,9 @@
 
 .app-label {
 	-fx-text-fill: TEXT-PRIMARY;
-	-fx-font-weight: bold;
 }
 
-.app-button, .cancel-button {
+.app-button, .cancel-button, #sidebar-toggle {
 	-fx-text-fill: BUTTON-TEXT-COLOR;
 	-fx-content-display: center;
 
@@ -54,7 +54,7 @@
 	-fx-font-size: 18;
 }
 
-.app-button:hover, .cancel-button:hover {
+.app-button:hover, .cancel-button:hover, #sidebar-toggle:hover {
 	-fx-scale-x: 110%;
 	-fx-scale-y: 110%;
 }
@@ -73,6 +73,14 @@
 
 .cancel-button:armed {
 	-fx-background-color: derive(HIGHLIGHT-DANGER, -20%);
+}
+
+#sidebar-toggle:hover {
+	-fx-background-color: derive(BG-PRIMARY, 20%);
+}
+
+#sidebar-toggle:armed {
+	-fx-background-color: derive(BG-PRIMARY, -10%);
 }
 
 .app-button:focused, .cancel-button:focused {
@@ -135,6 +143,7 @@
 	
 	-fx-spacing: 16;
 	-fx-min-width: 210;
+	-fx-max-width: 210;
 	-fx-padding: 10;
 }
 
@@ -164,13 +173,26 @@
 	-fx-font-weight: bold;
 }
 
-#sub-menu {
-	fx-alignment: center;
-	fx-spacing: 10;
-}
-
 #model-cbox {
 	-fx-pref-width: 160;
+}
+
+#sidebar .text-input, 
+#sidebar .combo-box, 
+#sidebar .combo-box .list-cell {
+	-fx-background-color: derive(BG-PRIMARY, 25%);
+	-fx-text-fill: TEXT-PRIMARY;
+}
+
+.spinner-box > .spinner > .increment-arrow-button,
+.spinner-box > .spinner > .decrement-arrow-button {
+	-fx-background-color: BG-PRIMARY;
+}
+
+.spinner-box > .spinner .decrement-arrow,
+.spinner-box > .spinner .increment-arrow,
+.combo-box .arrow  {
+	-fx-background-color: BG-SECONDARY;
 }
 
 #debug-group {
