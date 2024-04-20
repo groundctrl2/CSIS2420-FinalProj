@@ -40,7 +40,7 @@
 	-fx-text-fill: TEXT-PRIMARY;
 }
 
-.app-button, .cancel-button {
+.app-button, .cancel-button, #sidebar-toggle {
 	-fx-text-fill: BUTTON-TEXT-COLOR;
 	-fx-content-display: center;
 
@@ -53,7 +53,7 @@
 	-fx-font-size: 18;
 }
 
-.app-button:hover, .cancel-button:hover {
+.app-button:hover, .cancel-button:hover, #sidebar-toggle:hover {
 	-fx-scale-x: 110%;
 	-fx-scale-y: 110%;
 }
@@ -72,6 +72,14 @@
 
 .cancel-button:armed {
 	-fx-background-color: derive(HIGHLIGHT-DANGER, -20%);
+}
+
+#sidebar-toggle:hover {
+	-fx-background-color: derive(BG-PRIMARY, 20%);
+}
+
+#sidebar-toggle:armed {
+	-fx-background-color: derive(BG-PRIMARY, -10%);
 }
 
 .app-button:focused, .cancel-button:focused {

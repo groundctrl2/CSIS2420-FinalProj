@@ -56,6 +56,7 @@ public class ViewController {
 	@FXML private Button randomButton;
 	@FXML private Button pausePlayButton;
 	@FXML private Button stepButton;
+	@FXML private Button sidebarToggle;
 	@FXML private Text debugText;
 
 	// sidebar stuff
@@ -274,6 +275,13 @@ public class ViewController {
 		initModelSelectorBox();
 		initColorMenu();
 		initLiveStyleEditor();
+
+		sidebarToggle.setTooltip(newTooltip("Toggle sidebar (T or Ctrl+T)"));
+
+		sidebarToggle.setOnAction(e -> {
+			sidebar.setManaged(!sidebar.isManaged());
+			sidebar.setVisible(!sidebar.isVisible());
+		});
 	}
 
 	private void initTpsControls() {
@@ -394,9 +402,7 @@ public class ViewController {
 			grid.redraw();
 		});
 
-		var tip = new Tooltip("Select color");
-		tip.setShowDelay(javafx.util.Duration.millis(200));
-		colorPicker.setTooltip(tip);
+		colorPicker.setTooltip(newTooltip("Select color"));
 	}
 
 	private void initLiveStyleEditor() {
@@ -412,10 +418,13 @@ public class ViewController {
 			}
 		});
 
-		var tip = new Tooltip(styleEditorButton.getText());
-		tip.setShowDelay(javafx.util.Duration.millis(200));
-		styleEditorButton.setTooltip(tip);
+		styleEditorButton.setTooltip(newTooltip(styleEditorButton.getText()));
+	}
 
+	private Tooltip newTooltip(String text) {
+		var tip = new Tooltip(text);
+		tip.setShowDelay(javafx.util.Duration.millis(200));
+		return tip;
 	}
 
 	private void installHotkeys() {

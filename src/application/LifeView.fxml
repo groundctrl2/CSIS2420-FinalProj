@@ -36,14 +36,20 @@
 				<Canvas fx:id="canvas" />
 			</ScrollPane>
 		</center>
-
+		
 		<bottom>
 			<VBox id="bottom-box" fx:id="bottomBox" BorderPane.alignment="CENTER">
 				<HBox id="main-controls-bar" fx:id="mainControlsBar">
+					<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
+
 					<Button id="clear-button"      fx:id="clearButton"     styleClass="cancel-button" text="CLEAR" />
 					<Button id="random-button"     fx:id="randomButton"    styleClass="cancel-button" text="RANDOM" />
 					<Button id="pause-play-button" fx:id="pausePlayButton" styleClass="app-button" text="PLAY" />
 					<Button id="step-button"       fx:id="stepButton"      styleClass="app-button" text="STEP" />
+
+					<Region HBox.hgrow="ALWAYS" />                     <!-- spacer -->
+					
+					<Button id="sidebar-toggle"    fx:id="sidebarToggle" text="..." />
 				</HBox>
 
 				<HBox id="debug-group" fx:id="debugGroup">
