@@ -226,9 +226,11 @@ public class AmoebaLife implements ILife {
 	@Override
 	public boolean step(Callback action) {
 		ArrayList<Integer> foodIndexes = new ArrayList<>();
-		alreadyMoved = new ArrayList<>(); // Stores movements to prevent multiple movements in one step.
+		alreadyMoved = new ArrayList<>(); // Stores movements to prevent multiple movements in one
+		                                  // step.
 		int nucleusCount = 0;
-		int deadCellsSkipped = 0; // Counter used to avoid each cell being considered as food each step.
+		int deadCellsSkipped = 0; // Counts dead cells skipped each step.
+		int noMoreFood = 0; // Counts steps without food for population control.
 
 		for (int i = 0; i < cells.length; i++) {
 			if (cells[i] == NUCLEUS)
@@ -260,8 +262,7 @@ public class AmoebaLife implements ILife {
 					}
 					// Else stay in place.
 					else
-						queue.enqueue(
-						    new Cell(convertToRow(current), convertToCol(current), FOOD));
+						queue.enqueue(new Cell(convertToRow(current), convertToCol(current), FOOD));
 				}
 				// If cell dead/empty or body and alone, chance to become food if all dead.
 				else if (cells[current] != NUCLEUS)
@@ -277,7 +278,7 @@ public class AmoebaLife implements ILife {
 									alone = false;
 
 							// Chance of becoming food.
-							if (RANDOM.nextInt(ncols * nrows * 8) == 0 && alone)
+							if (RANDOM.nextInt(ncols * nrows * 6) == 0 && alone)
 								queue.enqueue(new Cell(row, col, FOOD));
 						}
 						else
@@ -339,7 +340,8 @@ public class AmoebaLife implements ILife {
 						// Continue targeting.
 						else {
 							amoebaInfo[current][1]++; // Add 1 to hunger.
-							int nextPosition = current;
+							int bestPosition = current;
+							int alternativePosition = current;
 
 							// Get all possible positions
 							ArrayList<Integer> availablePositions = getPossiblePositions(current);
@@ -351,21 +353,31 @@ public class AmoebaLife implements ILife {
 								    neighbor);
 								if (currentDistance > neighborPath.distTo(target)) {
 									currentDistance = neighborPath.distTo(target);
-									nextPosition = neighbor;
+									if (bestPosition != current)
+										alternativePosition = bestPosition;
+									bestPosition = neighbor;
 								}
 							}
 
-							move(current, nextPosition);
+							// If best position gets/stays too close to another nucleus, move to the
+							// alternative position.
+							if (getPossiblePositions(bestPosition)
+							    .size() >= getPossiblePositions(alternativePosition).size() - 1)
+								move(current, bestPosition);
+							else
+								move(current, alternativePosition);
 						}
 					}
 					// Else no food to eat, baby dies or move randomly.
 					else {
-						// If population too high, kill the babies until low enough.
-						if (nucleusCount > (nrows * ncols) / 50 && amoebaInfo[current][0] == 1
-						    && RANDOM.nextBoolean()) {
+						// If population too high and food is running out too frequently, kill the
+						// babies randomly until level.
+						if ((nucleusCount > (nrows * ncols) / 50 && amoebaInfo[current][0] == 1)
+						     || (noMoreFood > 50 && amoebaInfo[current][0] == 1)) {
 							cells[current] = CellState.DEAD;
 							queue.enqueue(new Cell(row, col, CellState.DEAD));
 							nucleusCount--;
+							noMoreFood = 0;
 						}
 						else {
 							// Get all possible random positions
@@ -376,6 +388,8 @@ public class AmoebaLife implements ILife {
 							    .get(RANDOM.nextInt(availablePositions.size()));
 							move(current, randomPosition);
 						}
+						
+						noMoreFood++;
 					}
 					setGrowthStage(row, col);
 				}
