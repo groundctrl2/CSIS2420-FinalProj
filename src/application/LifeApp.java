@@ -26,6 +26,9 @@ import javafx.stage.Stage;
  * </ol>
  *
  * @see #main
+ * 
+ * @author Paul Nguyen
+ * @author Tommy Collier
  */
 public class LifeApp extends Application {
 	@Override
@@ -36,10 +39,9 @@ public class LifeApp extends Application {
 			Scene scene = new Scene(root);
 
 			/*
-			 * Restrict window size to maximum allowance.
-			 * While the user can't manually oversize the window, the window
-			 * may overshoot the visual bounds if the scene contains an oversized
-			 * node (in this case, the main canvas).
+			 * Restrict window size to maximum allowance. While the user can't manually
+			 * oversize the window, the window may overshoot the visual bounds if the scene
+			 * contains an oversized node (in this case, the main canvas).
 			 */
 			Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
 			stage.setMaxWidth(bounds.getWidth());
@@ -50,7 +52,8 @@ public class LifeApp extends Application {
 			// Close any other windows if the main stage is closed.
 			stage.setOnHidden(e -> Platform.exit());
 			stage.show();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

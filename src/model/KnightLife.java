@@ -6,9 +6,12 @@ import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 
 /**
- * A version of Conway's Game of Life that uses a graph to represent the neighbor relations for each cell.
- * Instead of the neighbor cells being those sharing an edge and corner, neighbors are the 8 cells a knight's
- * move away from each cell.
+ * A graph-based implementation of Conway's Game of Life. Instead of the
+ * neighbor cells being those sharing an edge and corner, neighbors are the 8
+ * cells a knight's move away from each cell.
+ * 
+ * @author Tommy Collier
+ * @author Paul Nguyen
  */
 public class KnightLife implements ILife {
 	private Graph world;
@@ -70,15 +73,18 @@ public class KnightLife implements ILife {
 		int row = convertToRow(index);
 		int col = convertToCol(index);
 
-		// int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows};
-		// int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};
-		int[] rowOffsets = { (row - 2 + nrows) % nrows, (row - 1 + nrows) % nrows, (row + 1 + nrows) % nrows,
-				(row + 2 + nrows) % nrows };
-		int[] colOffsets = { (col - 2 + ncols) % ncols, (col - 1 + ncols) % ncols, (col + 1 + ncols) % ncols,
-				(col + 2 + ncols) % ncols };
+		// int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) %
+		// nrows};
+		// int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) %
+		// ncols};
+		int[] rowOffsets = { (row - 2 + nrows) % nrows, (row - 1 + nrows) % nrows,
+		    (row + 1 + nrows) % nrows, (row + 2 + nrows) % nrows };
+		int[] colOffsets = { (col - 2 + ncols) % ncols, (col - 1 + ncols) % ncols,
+		    (col + 1 + ncols) % ncols, (col + 2 + ncols) % ncols };
 		int[][] neighbors = { { rowOffsets[0], colOffsets[1] }, { rowOffsets[0], colOffsets[2] },
-				{ rowOffsets[1], colOffsets[0] }, { rowOffsets[1], colOffsets[3] }, { rowOffsets[2], colOffsets[0] },
-				{ rowOffsets[2], colOffsets[3] }, { rowOffsets[3], colOffsets[1] }, { rowOffsets[3], colOffsets[2] } };
+		    { rowOffsets[1], colOffsets[0] }, { rowOffsets[1], colOffsets[3] },
+		    { rowOffsets[2], colOffsets[0] }, { rowOffsets[2], colOffsets[3] },
+		    { rowOffsets[3], colOffsets[1] }, { rowOffsets[3], colOffsets[2] } };
 
 		for (int n = 0; n < neighbors.length; n++) {
 			int neighbor = convertToIndex(neighbors[n][0], neighbors[n][1]);
@@ -143,9 +149,11 @@ public class KnightLife implements ILife {
 			int col = convertToCol(current);
 
 			if (cells[current] == CellState.ALIVE) {
-				if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if between 2-3 neighbors.
+				if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if
+				                                              // between 2-3 neighbors.
 					queue.enqueue(new Cell(row, col, CellState.DEAD));
-			} else { // if (cells[i].state() == CellState.DEAD)
+			}
+			else { // if (cells[i].state() == CellState.DEAD)
 				if (aliveNeighbors == 3) // Dead cell with 3 neighbors becomes alive.
 					queue.enqueue(new Cell(row, col, CellState.ALIVE));
 			}
@@ -186,11 +194,11 @@ public class KnightLife implements ILife {
 
 		return count;
 	}
-	
+
 	/**
 	 * @return Description of this model
 	 */
 	public String description() {
-		return "Knight's Game of Life.\nNeighbors are a chess knight's move apart."; 
+		return "Knight's Game of Life.\nNeighbors are a chess knight's move apart.";
 	}
 }

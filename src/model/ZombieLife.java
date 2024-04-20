@@ -7,6 +7,13 @@ import edu.princeton.cs.algs4.BreadthFirstPaths;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 
+/**
+ * Using a graph-based implementation of Conway's Game of Life (classic ruleset
+ * B3/S23), 'Zombie' cells use BFS to attack all life.
+ * 
+ * @author Tommy Collier
+ * @author Paul Nguyen
+ */
 public class ZombieLife implements ILife {
 	private Graph world;
 	private CellState[] cells; // row-col indexed
@@ -159,7 +166,8 @@ public class ZombieLife implements ILife {
 				else if (aliveCells.size() > 0) {
 					BreadthFirstPaths bfs = new BreadthFirstPaths(world, current);
 
-					// If current target has been chased too long or it hasn't been found yet, get new one.
+					// If current target has been chased too long or it hasn't been found yet, get
+					// new one.
 					if (zombieTargets[current][1] > 5 || zombieTargets[current][0] == -1) {
 						zombieTargets[current][1] = 0; // Reset target step count
 						zombieTargets[current][0] = aliveCells.get(0);
@@ -199,7 +207,8 @@ public class ZombieLife implements ILife {
 						}
 
 						// Pick a random position for next position
-						nextPosition = availablePositions.get(RANDOM.nextInt(availablePositions.size()));
+						nextPosition = availablePositions
+						    .get(RANDOM.nextInt(availablePositions.size()));
 					}
 
 					// If moving, move.
@@ -211,8 +220,10 @@ public class ZombieLife implements ILife {
 						queue.enqueue(new Cell(newRow, newCol, COLOR_1));
 
 						// Set new zombie target values
-						zombieTargets[convertToIndex(newRow, newCol)][0] = zombieTargets[current][0];
-						zombieTargets[convertToIndex(newRow, newCol)][1] = zombieTargets[current][1];
+						zombieTargets[convertToIndex(newRow,
+						    newCol)][0] = zombieTargets[current][0];
+						zombieTargets[convertToIndex(newRow,
+						    newCol)][1] = zombieTargets[current][1];
 						zombieTargets[current][0] = -1;
 						zombieTargets[current][1] = 0;
 					}
@@ -234,7 +245,8 @@ public class ZombieLife implements ILife {
 					if (cells[neighbor] == CellState.ALIVE)
 						aliveNeighbors++;
 
-					if (cells[neighbor] == COLOR_1);
+					if (cells[neighbor] == COLOR_1)
+						;
 				}
 
 				// Check if there's a zombie neighbor
@@ -254,7 +266,9 @@ public class ZombieLife implements ILife {
 						zombieTargets[current][0] = -1; // Reset target
 						zombieTargets[current][1] = 0; // Reset target step count
 					}
-					else if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if between 2-3 neighbors.
+					else if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay
+					                                                   // alive if between 2-3
+					                                                   // neighbors.
 						queue.enqueue(new Cell(row, col, CellState.DEAD));
 				}
 				else { // if (cells[i].state() == CellState.DEAD)
@@ -304,11 +318,11 @@ public class ZombieLife implements ILife {
 
 		return count;
 	}
-	
+
 	/**
 	 * @return Description of this model
 	 */
 	public String description() {
-		return "Zombies vs The Game of Life.\nZombies use BFS to attack all life."; 
+		return "Zombies vs The Game of Life.\nZombies use BFS to attack all life.";
 	}
 }

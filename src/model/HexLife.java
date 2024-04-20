@@ -5,6 +5,13 @@ import java.util.Arrays;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 
+/**
+ * A graph-based hex grid implementation of the Conway's Game of Life. Cells
+ * swap states if they have exactly 2 neighbors.
+ * 
+ * @author Paul Nguyen
+ * @author Tommy Collier
+ */
 public class HexLife implements ILife {
 	private Graph world;
 	private CellState[] cells; // row-col indexed
@@ -65,18 +72,19 @@ public class HexLife implements ILife {
 		int row = convertToRow(index);
 		int col = convertToCol(index);
 
-		/* This assumes that odd-rows are offset (i.e., shifted right) in the hex grid.
+		/*
+		 * This assumes that odd-rows are offset (i.e., shifted right) in the hex grid.
 		 * So even rows are missing their top-right and bottom-right neighbors (out of
 		 * the standard 8), and odd rows are missing the top-left and bottom-left.
 		 */
-		int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows};
-		int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};
+		int[] rowOffsets = { (row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows };
+		int[] colOffsets = { (col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols };
 		int[][] neighbors;
 
 		if (row % 2 == 0)
-			neighbors = new int[][] {{0, 0}, {0, 1}, {1, 0}, {1, 2}, {2, 0}, {2, 1}};
+			neighbors = new int[][] { { 0, 0 }, { 0, 1 }, { 1, 0 }, { 1, 2 }, { 2, 0 }, { 2, 1 } };
 		else
-			neighbors = new int[][] {{0, 1}, {0, 2}, {1, 0}, {1, 2}, {2, 1}, {2, 2}};
+			neighbors = new int[][] { { 0, 1 }, { 0, 2 }, { 1, 0 }, { 1, 2 }, { 2, 1 }, { 2, 2 } };
 
 		for (int[] neighbor : neighbors) {
 			int neighborIndex = convertToIndex(rowOffsets[neighbor[0]], colOffsets[neighbor[1]]);
@@ -185,11 +193,11 @@ public class HexLife implements ILife {
 
 		return count;
 	}
-	
+
 	/**
 	 * @return Description of this model
 	 */
 	public String description() {
-		return "Hex-Grid Game of Life.\nCells swap states if they have exactly 2 alive neighbors."; 
+		return "Hex-Grid Game of Life.\nCells swap states if they have exactly 2 alive neighbors.";
 	}
 }

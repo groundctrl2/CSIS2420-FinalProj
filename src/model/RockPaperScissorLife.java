@@ -5,6 +5,13 @@ import java.util.Arrays;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 
+/**
+ * A graph-based cellular automata using the rules of Rock Paper Scissors. If a
+ * cell has 2 or more 'predator neighbors', the cell is overtaken.
+ * 
+ * @author Tommy Collier
+ * @author Paul Nguyen
+ */
 public class RockPaperScissorLife implements ILife {
 	private Graph world;
 	private CellState[] cells; // row-col indexed
@@ -147,7 +154,7 @@ public class RockPaperScissorLife implements ILife {
 				if (cells[neighbor] == predator)
 					predatorNeighbors++;
 			}
-			
+
 			// Record needed updates
 			if (predatorNeighbors > 2)
 				queue.enqueue(new Cell(row, col, predator));
@@ -183,11 +190,11 @@ public class RockPaperScissorLife implements ILife {
 	public long populationCount() {
 		return nrows * ncols; // All cells are considered alive.
 	}
-	
+
 	/**
 	 * @return Description of this model
 	 */
 	public String description() {
-		return "Rock Paper Scissors.\nIf a cell has 2 or more 'predator neighbors', the cell is overtaken."; 
+		return "Rock Paper Scissors.\nIf a cell has 2 or more 'predator neighbors', the cell is overtaken.";
 	}
 }
