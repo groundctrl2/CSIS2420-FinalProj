@@ -4,6 +4,7 @@ import static javafx.scene.input.KeyCombination.keyCombination;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import application.component.LiveStyleEditor;
 import application.component.SpinnerBox;
@@ -323,17 +324,17 @@ public class ViewController {
 	}
 
 	private void initModelSelectorBox() {
-		var table = new HashMap<String, Class<? extends ILife>>();
+		var table = new LinkedHashMap<String, Class<? extends ILife>>();
 
-		table.put("AmoebaLife", model.AmoebaLife.class);
 		table.put("GraphLife", model.GraphLife.class);
+		table.put("SimpleLife", model.SimpleLife.class);
 		table.put("HexLife", model.HexLife.class);
 		table.put("KnightLife", model.KnightLife.class);
 		table.put("LifeInColor", model.LifeInColor.class);
 		table.put("RockPaperScissorLife", model.RockPaperScissorLife.class);
-		table.put("SimpleLife", model.SimpleLife.class);
 		table.put("VampireLife", model.VampireLife.class);
 		table.put("ZombieLife", model.ZombieLife.class);
+		table.put("AmoebaLife", model.AmoebaLife.class);
 
 		var items = modelCBox.getItems();
 
