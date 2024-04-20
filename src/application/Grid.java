@@ -281,15 +281,11 @@ abstract class Grid {
 
 		/** Convert from column index to x-coordinate of the top point of hex interior */
 		private double toXCoord(int row, int col) {
-			return CELL_BORDER_WIDTH + col*hexWidth() + rowOffset(row);
-		}
-
-		/**
-		 * For even rows, the offset is half the width.
-		 * For odd rows, the offset is the width.
-		 */
-		private double rowOffset(int row) {
-			return ((row & 1) + 1) * 0.5 * hexWidth();
+			// For even rows, the offset is half the width.
+			// For odd rows, the offset is the width.
+			double offset = ((row & 1) + 1) * 0.5;
+			return CELL_BORDER_WIDTH + hexWidth() * (col + offset);
+			//return CELL_BORDER_WIDTH + col*hexWidth() + rowOffset(row);
 		}
 
 		private double hexHeight() {
@@ -335,7 +331,7 @@ abstract class Grid {
 		@Override
 		protected void resizeCanvas() {
 			canvas.setWidth((ncols + 0.5) * hexWidth());
-			canvas.setHeight((0.75 * nrows + 1) * hexHeight());
+			canvas.setHeight((0.75*nrows + 0.25) * hexHeight());
 		}
 
 		/**
@@ -347,8 +343,7 @@ abstract class Grid {
 			double width = canvas.getWidth();
 			double height = canvas.getHeight();
 
-			graphics.setFill(masterControl.getRootBackgroundColor());
-			graphics.fillRect(0, 0, width, height);
+			graphics.clearRect(0, 0, width, height);
 
 			var model = masterControl.getModel();
 

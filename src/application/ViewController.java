@@ -16,7 +16,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 import model.ILife;
 
@@ -116,7 +115,6 @@ public class ViewController {
 		Platform.runLater(this::installHotkeys);
 	}
 
-
 	/**
 	 * Initializes the canvas.
 	 */
@@ -124,6 +122,9 @@ public class ViewController {
 		// Bind canvas container dimensions to the canvas dimensions.
 		centerPane.maxWidthProperty().bind(canvas.widthProperty());
 		centerPane.maxHeightProperty().bind(canvas.heightProperty());
+		// Not sure if this helps with the edges?
+		centerPane.prefViewportWidthProperty().bind(canvas.widthProperty());
+		centerPane.prefViewportHeightProperty().bind(canvas.heightProperty());
 
 		// subscribe() will also immediately fire and init the grid
 		gridToggleGroup.selectedToggleProperty().subscribe(this::setGrid);
@@ -145,10 +146,14 @@ public class ViewController {
 	}
 
 	private void setGrid(Toggle selectedToggle) {
-		if (selectedToggle == classicRadioButton)
+		if (selectedToggle == classicRadioButton) {
 			grid = new Grid.Classic(this, canvas);
-		else
+			centerPane.getStyleClass().remove("hex-mode");
+		}
+		else {
 			grid = new Grid.Hex(this, canvas);
+			centerPane.getStyleClass().add("hex-mode");
+		}
 
 		// Set initial values of the grid to the initial values in the controls.
 		int nrows = nrowsControl.spinner.getValue();
@@ -259,10 +264,6 @@ public class ViewController {
 		model.resize(grid.nrows(), grid.ncols());
 		resetAnimation();
 		grid.redraw();
-	}
-
-	Paint getRootBackgroundColor() {
-		return Color.web("#576F8D");
 	}
 
 	private void initTpsControls() {

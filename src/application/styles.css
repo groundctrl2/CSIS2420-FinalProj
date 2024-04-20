@@ -102,13 +102,21 @@
 #center-pane {
 	-fx-background-color: transparent;
 	-fx-border-style: solid outside;
-	-fx-border-color: transparent;
+	-fx-border-color: BORDER-COLOR;
 	-fx-border-width: 3;
 	-fx-border-insets: 0 12 0 12;
 
 	-fx-pannable: true;
 	-fx-vbar-policy: never;
 	-fx-hbar-policy: never;
+}
+
+#center-pane.hex-mode {
+	-fx-border-color: transparent;
+}
+
+#center-pane > .viewport {
+	-fx-background-color: transparent;
 }
 
 #toolbar {
