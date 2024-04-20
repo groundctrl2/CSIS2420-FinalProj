@@ -5,8 +5,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * An implementation of Conway's Game of Life (B3/S23)
- * using a sparse representation of the world.
+ * An implementation of Conway's Game of Life (classic ruleset B3/S23) using a
+ * sparse representation of the world..
+ * 
+ * @author Paul Nguyen
+ * @author Tommy Collier
  */
 public class SparseLife implements ILife {
 	private int nrows;
@@ -16,33 +19,32 @@ public class SparseLife implements ILife {
 	private Set<Loc> liveSet;
 
 	/**
-	 * Use this method to create an index pair instead of {@link Loc#Loc new Loc(...)}
-	 * to normalize the indices / adjust for grid wrap-around.
+	 * Use this method to create an index pair instead of {@link Loc#Loc new
+	 * Loc(...)} to normalize the indices / adjust for grid wrap-around.
 	 */
 	private Loc loc(int row, int col) {
 		return new Loc(Math.floorMod(row, nrows), Math.floorMod(col, ncols));
 	}
 
 	/**
-	 * A pair of ints representing the grid location of a live cell.
-	 * Use {@link SparseLife#loc loc(...)} instead of {@code new Loc(...)}
+	 * A pair of ints representing the grid location of a live cell. Use
+	 * {@link SparseLife#loc loc(...)} instead of {@code new Loc(...)}
 	 */
 	private record Loc(int row, int col) {
 		/**
-		 * Returns an array of the locations of the 3x3 neighborhood
-		 * centered at this location.
-		 * */
+		 * Returns an array of the locations of the 3x3 neighborhood centered at this
+		 * location.
+		 */
 		Loc[] neighborhood(SparseLife context) {
-			return new Loc[] {
-				context.loc(row - 1, col - 1),  // NW
-				context.loc(row - 1, col + 0),  // N
-				context.loc(row - 1, col + 1),  // NE
-				context.loc(row + 0, col - 1),  // W
-				this,  // assume this location is already normalized
-				context.loc(row + 0, col + 1),  // E
-				context.loc(row + 1, col - 1),  // SW
-				context.loc(row + 1, col + 0),  // S
-				context.loc(row + 1, col + 1),  // SE
+			return new Loc[] { context.loc(row - 1, col - 1), // NW
+			    context.loc(row - 1, col + 0), // N
+			    context.loc(row - 1, col + 1), // NE
+			    context.loc(row + 0, col - 1), // W
+			    this, // assume this location is already normalized
+			    context.loc(row + 0, col + 1), // E
+			    context.loc(row + 1, col - 1), // SW
+			    context.loc(row + 1, col + 0), // S
+			    context.loc(row + 1, col + 1), // SE
 			};
 		}
 	}
@@ -94,12 +96,12 @@ public class SparseLife implements ILife {
 		 * need to consider are the current live cells and their immediate neighbors.
 		 * All other cells will remain dead.
 		 *
-		 * First, for each live cell, we create a counter mapping the (row, col)
-		 * of every cell that has potential for change to the population count
-		 * of the 3x3 neighborhood centered at that cell's location.
+		 * First, for each live cell, we create a counter mapping the (row, col) of
+		 * every cell that has potential for change to the population count of the 3x3
+		 * neighborhood centered at that cell's location.
 		 *
-		 * The population count differ from neighbor count in that it includes
-		 * the central cell.
+		 * The population count differ from neighbor count in that it includes the
+		 * central cell.
 		 */
 		var populationCounts = new HashMap<Loc, Integer>();
 
@@ -148,11 +150,11 @@ public class SparseLife implements ILife {
 	public long populationCount() {
 		return liveSet.size();
 	}
-	
+
 	/**
 	 * @return Description of this model
 	 */
 	public String description() {
-		return "Conway's Game of Life.\nImplemented using a set storing the locations of live cells."; 
+		return "Conway's Game of Life.\nImplemented using a set storing the locations of live cells.";
 	}
 }

@@ -9,12 +9,15 @@ import java.util.Random;
  * will interact with model classes (which handle the simulation data and
  * implement the actual Game of Life algorithm) in order to update the view.
  *
+ * @author Paul Nguyen
+ * @author Tommy Collier
  */
 public interface ILife {
 	/**
 	 * A convenience class for holding multiple return values / parameters.
 	 */
-	record Cell(int row, int col, CellState state) {}
+	record Cell(int row, int col, CellState state) {
+	}
 
 	@FunctionalInterface
 	interface Callback {
@@ -58,10 +61,10 @@ public interface ILife {
 	 * whose state was changed from the last tick.
 	 *
 	 * @param action Used to notify the caller (i.e., the controller) that a state
-	 *               change occurred for a given cell in order to provide incremental
-	 *               updates.
-	 * @return {@code true} if the world was changed at all as a result of this step,
-	 *         {@code false} otherwise.
+	 *               change occurred for a given cell in order to provide
+	 *               incremental updates.
+	 * @return {@code true} if the world was changed at all as a result of this
+	 *         step, {@code false} otherwise.
 	 */
 	boolean step(Callback action);
 
@@ -76,7 +79,6 @@ public interface ILife {
 	 * @return the number of currently living cells.
 	 */
 	long populationCount();
-
 
 	/**
 	 * @return an optional description of this model

@@ -7,6 +7,13 @@ import edu.princeton.cs.algs4.BreadthFirstPaths;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 
+/**
+ * A graph-based amoeba simulation. Includes growth, mitosis, and hunger-based
+ * population control.
+ * 
+ * @author Tommy Collier
+ * @author Paul Nguyen
+ */
 public class AmoebaLife implements ILife {
 	private Graph world;
 	private CellState[] cells; // row-col indexed
@@ -373,7 +380,7 @@ public class AmoebaLife implements ILife {
 						// If population too high and food is running out too frequently, kill the
 						// babies randomly until level.
 						if ((nucleusCount > (nrows * ncols) / 50 && amoebaInfo[current][0] == 1)
-						     || (noMoreFood > 50 && amoebaInfo[current][0] == 1)) {
+						    || (noMoreFood > 50 && amoebaInfo[current][0] == 1)) {
 							cells[current] = CellState.DEAD;
 							queue.enqueue(new Cell(row, col, CellState.DEAD));
 							nucleusCount--;
@@ -388,7 +395,7 @@ public class AmoebaLife implements ILife {
 							    .get(RANDOM.nextInt(availablePositions.size()));
 							move(current, randomPosition);
 						}
-						
+
 						noMoreFood++;
 					}
 					setGrowthStage(row, col);
@@ -488,11 +495,11 @@ public class AmoebaLife implements ILife {
 				count++;
 		return count;
 	}
-	
+
 	/**
 	 * @return Description of this model
 	 */
 	public String description() {
-		return "Amoeba simulation.\nIncludes growth, mitosis, and hunger-based population control."; 
+		return "Amoeba simulation.\nIncludes growth, mitosis, and hunger-based population control.";
 	}
 }

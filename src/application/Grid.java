@@ -13,6 +13,9 @@ import model.ILife;
  * Abstract base class for rectangular grids.
  *
  * @see Grid#Classic
+ * 
+ * @author Paul Nguyen
+ * @author Tommy Collier
  */
 abstract class Grid {
 	final ViewController masterControl;
@@ -21,7 +24,7 @@ abstract class Grid {
 	final GraphicsContext graphics;
 
 	Color primaryColor = Color.BLACK;
-	static final Color TILE_BORDER_COLOR =  Color.rgb(87, 111, 141);
+	static final Color TILE_BORDER_COLOR = Color.rgb(87, 111, 141);
 	static final Color AXIS_COLOR = Color.GRAY;
 
 	protected int nrows;
@@ -43,8 +46,13 @@ abstract class Grid {
 
 	abstract int[] toRowColIndex(double x, double y);
 
-	int nrows() { return nrows; }  // corresponding setter below
-	int ncols() { return ncols; }  // corresponding setter below
+	int nrows() {
+		return nrows;
+	} // corresponding setter below
+
+	int ncols() {
+		return ncols;
+	} // corresponding setter below
 
 	void setNumRows(int nrows) {
 		setDimensions(nrows, this.ncols);
@@ -66,7 +74,7 @@ abstract class Grid {
 
 	void setCellSize(int cellSize) {
 		this.cellSize = cellSize;
-		this.cellInteriorSize = cellSize - 2*CELL_BORDER_WIDTH;
+		this.cellInteriorSize = cellSize - 2 * CELL_BORDER_WIDTH;
 		resize();
 	}
 
@@ -92,7 +100,7 @@ abstract class Grid {
 	 * @return a custom, state-dependent color for drawing a cell
 	 */
 	protected Color decideColor(CellState state) {
-		switch(state) {
+		switch (state) {
 			case BLUE:
 				if (ILife.RANDOM.nextBoolean())
 					return Color.rgb(50, 90, 130);
@@ -141,12 +149,14 @@ abstract class Grid {
 
 		/** Convert from row index to y-coordinate of the top-left of cell interior */
 		private double toYCoord(int row) {
-			return CELL_BORDER_WIDTH + row*cellSize;
+			return CELL_BORDER_WIDTH + row * cellSize;
 		}
 
-		/** Convert from column index to x-coordinate of the top-left of cell interior */
+		/**
+		 * Convert from column index to x-coordinate of the top-left of cell interior
+		 */
 		private double toXCoord(int col) {
-			return CELL_BORDER_WIDTH + col*cellSize;
+			return CELL_BORDER_WIDTH + col * cellSize;
 		}
 
 		/**
@@ -160,8 +170,8 @@ abstract class Grid {
 		}
 
 		/**
-		 * Redraws the whole grid by querying the model for the state of each
-		 * living cell.
+		 * Redraws the whole grid by querying the model for the state of each living
+		 * cell.
 		 */
 		@Override
 		void redraw() {
@@ -177,7 +187,7 @@ abstract class Grid {
 			graphics.setFill(Color.WHITE);
 			graphics.fillRect(0, 0, width, height);
 			graphics.setStroke(TILE_BORDER_COLOR);
-			graphics.setLineWidth(2*CELL_BORDER_WIDTH);
+			graphics.setLineWidth(2 * CELL_BORDER_WIDTH);
 
 			// Draw vertical grid lines
 			for (int x = 0; x < width; x += cellSize)
@@ -197,7 +207,7 @@ abstract class Grid {
 			});
 
 			// Draw axis lines a little darker (and maybe thicker?) than normal grid lines
-			graphics.setLineWidth(2*CELL_BORDER_WIDTH);
+			graphics.setLineWidth(2 * CELL_BORDER_WIDTH);
 			graphics.setStroke(AXIS_COLOR);
 			int halfX = ncols / 2 * cellSize;
 			int halfY = nrows / 2 * cellSize;
@@ -229,7 +239,7 @@ abstract class Grid {
 				graphics.setFill(primaryColor);
 			}
 			else { // (model.get(row, col) != CellState.DEAD)
-				model.set(row,  col, CellState.DEAD);
+				model.set(row, col, CellState.DEAD);
 				graphics.setFill(Color.WHITE);
 			}
 
@@ -269,18 +279,18 @@ abstract class Grid {
 
 		@Override
 		int[] toRowColIndex(double x, double y) {
-			/* NOTE: The canvas coordinate has the center of the top-left hexagon
-			 * at (W/2, H/2) where W, H are the width and height of the hexagon.
-			 * The pixel to cube conversion algorithm assumes that the center is
-			 * (0, 0) in pixels. Therefore, we have to adjust the pixel coordinates
-			 * prior to use the conversion formulas.
+			/*
+			 * NOTE: The canvas coordinate has the center of the top-left hexagon at (W/2,
+			 * H/2) where W, H are the width and height of the hexagon. The pixel to cube
+			 * conversion algorithm assumes that the center is (0, 0) in pixels. Therefore,
+			 * we have to adjust the pixel coordinates prior to use the conversion formulas.
 			 */
 			double x1 = x - hexWidth() / 2;
 			double y1 = y - hexHeight() / 2;
 			int[] index = redblob_pixelToRowColIndex(x1, y1);
 			/*
-			 * Instead of clamping, the #toggleDisplayCell() function below
-			 * will simply no-op on out-of-bounds.
+			 * Instead of clamping, the #toggleDisplayCell() function below will simply
+			 * no-op on out-of-bounds.
 			 */
 			// index[0] = Math.clamp(index[0], 0, nrows - 1);
 			// index[1] = Math.clamp(index[1], 0, ncols - 1);
@@ -288,15 +298,15 @@ abstract class Grid {
 		}
 
 		/**
-		 * Converts floating point (x, y) coordinates to (row, col) indices,
-		 * using algorithms from Amit Patel's excellent primer on hex grids.
+		 * Converts floating point (x, y) coordinates to (row, col) indices, using
+		 * algorithms from Amit Patel's excellent primer on hex grids.
 		 *
 		 * @see https://www.redblobgames.com/grids/hexagons/#hex-to-pixel
 		 */
 		private int[] redblob_pixelToRowColIndex(double x, double y) {
 			// pixel --> fractional cube coordinates
-			double frac_q = (SQRT3/3*x - 1.0/3*y) / hexSize();
-			double frac_r = 2.0/3.0*y       / hexSize();
+			double frac_q = (SQRT3 / 3 * x - 1.0 / 3 * y) / hexSize();
+			double frac_r = 2.0 / 3.0 * y / hexSize();
 			double frac_s = -(frac_q + frac_r);
 
 			// round cube coordinates --> integer cube indices
@@ -315,23 +325,25 @@ abstract class Grid {
 			else
 				s = -(q + r);
 
-			assert q + r + s == 0: q + "|" + r + "|" + s;
+			assert q + r + s == 0 : q + "|" + r + "|" + s;
 
 			// cube indices --> "odd-r" offset indices (row, col)
-			int col = Math.toIntExact(q + ((r - (r&1)) / 2));
+			int col = Math.toIntExact(q + ((r - (r & 1)) / 2));
 			int row = Math.toIntExact(r);
 
-			return new int[] {row, col};
+			return new int[] { row, col };
 		}
 
 		/** Convert from row index to y-coordinate of the top point of hex interior */
 		private double toYCoord(int row, int col) {
 			// If the rows weren't offset, then the tiles would overlap.
 			// That's why the factor of 3/4 is included for the delta-y.
-			return CELL_BORDER_WIDTH + row*(0.75)*hexHeight();
+			return CELL_BORDER_WIDTH + row * (0.75) * hexHeight();
 		}
 
-		/** Convert from column index to x-coordinate of the top point of hex interior */
+		/**
+		 * Convert from column index to x-coordinate of the top point of hex interior
+		 */
 		private double toXCoord(int row, int col) {
 			// For even rows, the offset is half the width.
 			// For odd rows, the offset is the width.
@@ -339,7 +351,8 @@ abstract class Grid {
 			return CELL_BORDER_WIDTH + hexWidth() * (col + offset);
 		}
 
-		/** Distance from center to corner of hexagon
+		/**
+		 * Distance from center to corner of hexagon
 		 */
 		private double hexSize() {
 			return cellSize / 2.0;
@@ -372,11 +385,11 @@ abstract class Grid {
 			double dx = hexInteriorWidth() / 2;
 			double dy = hexInteriorHeight() / 4;
 
-			double[] xs = {x0, x0 + dx, x0 + dx, x0, x0 - dx, x0 - dx};
-			double[] ys = {y0, y0 + dy, y0 + 3*dy, y0 + 4*dy, y0 + 3*dy, y0 + dy};
+			double[] xs = { x0, x0 + dx, x0 + dx, x0, x0 - dx, x0 - dx };
+			double[] ys = { y0, y0 + dy, y0 + 3 * dy, y0 + 4 * dy, y0 + 3 * dy, y0 + dy };
 
 			graphics.setStroke(TILE_BORDER_COLOR);
-			graphics.setLineWidth(3*CELL_BORDER_WIDTH);
+			graphics.setLineWidth(3 * CELL_BORDER_WIDTH);
 			graphics.strokePolygon(xs, ys, 6);
 
 			graphics.setFill(interiorFill);
@@ -390,12 +403,12 @@ abstract class Grid {
 		@Override
 		protected void resizeCanvas() {
 			canvas.setWidth((ncols + 0.5) * hexWidth());
-			canvas.setHeight((0.75*nrows + 0.25) * hexHeight());
+			canvas.setHeight((0.75 * nrows + 0.25) * hexHeight());
 		}
 
 		/**
-		 * Redraws the whole grid by querying the model for the state of each
-		 * living cell.
+		 * Redraws the whole grid by querying the model for the state of each living
+		 * cell.
 		 */
 		@Override
 		void redraw() {
@@ -436,7 +449,7 @@ abstract class Grid {
 				drawHexTile(row, col, primaryColor);
 			}
 			else {
-				model.set(row,  col, CellState.DEAD);
+				model.set(row, col, CellState.DEAD);
 				drawHexTile(row, col, Color.WHITE);
 			}
 		}

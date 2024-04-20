@@ -6,8 +6,11 @@ import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 
 /**
- * A version of Conway's Game of Life (classic ruleset B3/S23) that uses a
- * graph to represent the neighbor relations for each cell.
+ * A graph-based implementation of Conway's Game of Life 
+ * (classic ruleset B3/S23).
+ * 
+ * @author Tommy Collier
+ * @author Paul Nguyen
  */
 public class GraphLife implements ILife {
 	private Graph world;
@@ -69,8 +72,8 @@ public class GraphLife implements ILife {
 		int row = convertToRow(index);
 		int col = convertToCol(index);
 
-		int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows};
-		int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};
+		int[] rowOffsets = { (row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows };
+		int[] colOffsets = { (col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols };
 
 		for (int r : rowOffsets)
 			for (int c : colOffsets)
@@ -137,7 +140,8 @@ public class GraphLife implements ILife {
 			int col = convertToCol(current);
 
 			if (cells[current] == CellState.ALIVE) {
-				if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if between 2-3 neighbors.
+				if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if
+				                                              // between 2-3 neighbors.
 					queue.enqueue(new Cell(row, col, CellState.DEAD));
 			}
 			else { // if (cells[i].state() == CellState.DEAD)
@@ -181,11 +185,11 @@ public class GraphLife implements ILife {
 
 		return count;
 	}
-	
+
 	/**
 	 * @return Description of this model
 	 */
 	public String description() {
-		return "Conway's Game of Life.\nImplemented using a graph, where each cell is a vertex and each neighbor connection an edge."; 
+		return "Conway's Game of Life.\nImplemented using a graph, where each cell is a vertex and each neighbor connection an edge.";
 	}
 }

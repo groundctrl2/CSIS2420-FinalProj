@@ -20,11 +20,15 @@ import javafx.scene.text.Text;
 import model.ILife;
 
 /**
- * Controller for the scene graph defined in <a href="LifeView.fxml">LifeView.fxml</a>.
+ * Controller for the scene graph defined in
+ * <a href="LifeView.fxml">LifeView.fxml</a>.
  * <p>
  * This class manages the interaction and facilitates communication between the
  * model (classes that run the simulation behind the scenes) and the view (the
  * visual display and UI components).
+ * 
+ * @author Paul Nguyen
+ * @author Tommy Collier
  */
 public class ViewController {
 	/*
@@ -33,48 +37,72 @@ public class ViewController {
 	 * target instance variable.
 	 *
 	 * Once the FXML is loaded and the variables are injected, the initialize()
-	 * method is called for post-processing, so start there to follow the
-	 * program behavior.
+	 * method is called for post-processing, so start there to follow the program
+	 * behavior.
 	 */
 
 	// ==================
 	// Component handles
 	// ==================
-	@FXML private HBox root;
-	@FXML private BorderPane mainArea;
+	@FXML
+	private HBox root;
+	@FXML
+	private BorderPane mainArea;
 
 	// top stuff
-	@FXML private HBox topBox;
-	@FXML private Text titleText;
+	@FXML
+	private HBox topBox;
+	@FXML
+	private Text titleText;
 
 	// center stuff
-	@FXML private ScrollPane centerPane;
-	@FXML private Canvas canvas;
+	@FXML
+	private ScrollPane centerPane;
+	@FXML
+	private Canvas canvas;
 
 	// bottom stuff
-	@FXML private Button clearButton;
-	@FXML private Button randomButton;
-	@FXML private Button pausePlayButton;
-	@FXML private Button stepButton;
+	@FXML
+	private Button clearButton;
+	@FXML
+	private Button randomButton;
+	@FXML
+	private Button pausePlayButton;
+	@FXML
+	private Button stepButton;
 
 	// sidebar stuff
-	@FXML private VBox sidebar;
-	@FXML private SpinnerBox tpsControl;
-	@FXML private SpinnerBox cellSizeControl;
-	@FXML private SpinnerBox nrowsControl;
-	@FXML private SpinnerBox ncolsControl;
-	@FXML private ComboBox<String> gridDimensionsComboBox;
+	@FXML
+	private VBox sidebar;
+	@FXML
+	private SpinnerBox tpsControl;
+	@FXML
+	private SpinnerBox cellSizeControl;
+	@FXML
+	private SpinnerBox nrowsControl;
+	@FXML
+	private SpinnerBox ncolsControl;
+	@FXML
+	private ComboBox<String> gridDimensionsComboBox;
 
-	@FXML private ToggleGroup gridToggleGroup;
-	@FXML private RadioButton classicRadioButton;
-	@FXML private RadioButton hexRadioButton;
+	@FXML
+	private ToggleGroup gridToggleGroup;
+	@FXML
+	private RadioButton classicRadioButton;
+	@FXML
+	private RadioButton hexRadioButton;
 
-	@FXML private ComboBox<String> modelCBox;
-	@FXML private Text modelInfo;
-	@FXML private Text debugText;
+	@FXML
+	private ComboBox<String> modelCBox;
+	@FXML
+	private Text modelInfo;
+	@FXML
+	private Text debugText;
 
-	@FXML private ColorPicker colorPicker;
-	@FXML private Button styleEditorButton;
+	@FXML
+	private ColorPicker colorPicker;
+	@FXML
+	private Button styleEditorButton;
 
 	// ==================
 	// Grid/Canvas stuff
@@ -85,7 +113,9 @@ public class ViewController {
 	private ILife model = new model.VampireLife();
 
 	// for access from the grid
-	public ILife getModel() { return model; }
+	public ILife getModel() {
+		return model;
+	}
 
 	// ================
 	// Animation stuff
@@ -172,7 +202,7 @@ public class ViewController {
 		// simulation by one step on each tick.
 		var timer = new AnimationTimer() {
 			@Override
-			public void handle(long now){
+			public void handle(long now) {
 				var tick = Duration.ofSeconds(1).dividedBy(ticksPerSecond);
 
 				if ((now - timestamp) > tick.toNanos()) {
@@ -217,9 +247,9 @@ public class ViewController {
 	}
 
 	/**
-	 * Perform miscellaneous actions on each step. For now, this just examines
-	 * the step count and also halts the animation if it stalls (although it
-	 * currently does not detect loops/cycles.
+	 * Perform miscellaneous actions on each step. For now, this just examines the
+	 * step count and also halts the animation if it stalls (although it currently
+	 * does not detect loops/cycles.
 	 */
 	private void reactToStep(boolean change) {
 		if (restart) {
@@ -286,7 +316,7 @@ public class ViewController {
 	}
 
 	private void initGridSizeControls() {
-		assert grid != null: "must call initCanvasAndGrid() first";
+		assert grid != null : "must call initCanvasAndGrid() first";
 
 		nrowsControl.subscribe(newValue -> {
 			grid.setNumRows(newValue);
@@ -303,9 +333,10 @@ public class ViewController {
 			grid.setCellSize(newValue);
 		});
 
-		/* Note the order of initialization here. The value must be set before
-		 * the update/change listener is registered on the combo-box in order
-		 * to prevent double initialization of the grid.
+		/*
+		 * Note the order of initialization here. The value must be set before the
+		 * update/change listener is registered on the combo-box in order to prevent
+		 * double initialization of the grid.
 		 */
 		gridDimensionsComboBox.setValue(nrowsControl.getValue() + "x" + ncolsControl.getValue());
 
@@ -342,7 +373,7 @@ public class ViewController {
 
 		// Set the current value to the current model's class.
 		String currentSelection = model.getClass().getSimpleName();
-		assert table.containsKey(currentSelection): currentSelection;
+		assert table.containsKey(currentSelection) : currentSelection;
 		modelCBox.setValue(currentSelection);
 
 		// Update the model whenever the combo box value changes.
@@ -363,7 +394,8 @@ public class ViewController {
 				if (desc != null)
 					modelInfo.setText(desc);
 
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 			}
 
@@ -372,7 +404,7 @@ public class ViewController {
 	}
 
 	private void initColorMenu() {
-		assert grid != null: "must call initCanvasAndGrid() first";
+		assert grid != null : "must call initCanvasAndGrid() first";
 
 		if (grid.primaryColor == null)
 			colorPicker.setValue(Color.BLACK);
@@ -384,7 +416,7 @@ public class ViewController {
 			var color = colorPicker.getValue();
 
 			if (grid.primaryColor.equals(color))
-				return;  // avoid unnecessary redraw
+				return; // avoid unnecessary redraw
 
 			grid.primaryColor = color;
 			grid.redraw();
@@ -419,18 +451,18 @@ public class ViewController {
 
 		acc.put(keyCombination("Shortcut+P"), pausePlayButton::requestFocus);
 		acc.put(keyCombination("P"), pausePlayButton::fire);
-		// acc.put(keyCombination("Shift+Comma"), backButton::fire);  // '<'
+		// acc.put(keyCombination("Shift+Comma"), backButton::fire); // '<'
 		// acc.put(keyCombination("B"), backButton::fire);
-		acc.put(keyCombination("Shift+Period"), stepButton::fire);  // '>'
+		acc.put(keyCombination("Shift+Period"), stepButton::fire); // '>'
 		acc.put(keyCombination("F"), stepButton::fire);
 		acc.put(keyCombination("Shift+C"), clearButton::fire);
 		acc.put(keyCombination("Shift+R"), randomButton::fire);
 
-		acc.put(keyCombination("Ignore Shortcut+Close Bracket"), () -> {  // ']'
+		acc.put(keyCombination("Ignore Shortcut+Close Bracket"), () -> { // ']'
 			tpsControl.setValue(ticksPerSecond + 1);
 		});
 
-		acc.put(keyCombination("Ignore Shortcut+Open Bracket"), () -> {  // '['
+		acc.put(keyCombination("Ignore Shortcut+Open Bracket"), () -> { // '['
 			tpsControl.setValue(ticksPerSecond - 1);
 		});
 

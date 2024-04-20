@@ -5,10 +5,14 @@ import java.util.Arrays;
 import edu.princeton.cs.algs4.Queue;
 
 /**
- * A basic implementation of Conway's Game of Life with the classic B3/S23 rules.
+ * A 2D array-based implementation of Conway's Game of Life 
+ * (classic ruleset B3/S23).
+ * 
+ * @author Tommy Collier
+ * @author Paul Nguyen
  */
 public class SimpleLife implements ILife {
-	private CellState[][] world;  // will be instantiated whenever resize() is called
+	private CellState[][] world; // will be instantiated whenever resize() is called
 	private int nrows;
 	private int ncols;
 
@@ -56,7 +60,8 @@ public class SimpleLife implements ILife {
 				int aliveNeighbors = countNeighbors(r, c);
 
 				if (get(r, c) == CellState.ALIVE) {
-					if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if between 2-3 neighbors.
+					if (aliveNeighbors < 2 || aliveNeighbors > 3) // Alive cells only stay alive if
+					                                              // between 2-3 neighbors.
 						queue.enqueue(new Cell(r, c, CellState.DEAD));
 				}
 				else { // if (get(r, c) == CellState.DEAD)
@@ -120,8 +125,8 @@ public class SimpleLife implements ILife {
 		 *
 		 * See: https://en.wikipedia.org/wiki/Modulo#In_programming_languages
 		 */
-		int[] rowOffsets = {(row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows};
-		int[] colOffsets = {(col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols};
+		int[] rowOffsets = { (row - 1 + nrows) % nrows, row, (row + 1 + nrows) % nrows };
+		int[] colOffsets = { (col - 1 + ncols) % ncols, col, (col + 1 + ncols) % ncols };
 
 		for (int r : rowOffsets)
 			for (int c : colOffsets)
@@ -131,11 +136,11 @@ public class SimpleLife implements ILife {
 
 		return count;
 	}
-	
+
 	/**
 	 * @return Description of this model
 	 */
 	public String description() {
-		return "Conway's Game of Life.\nImplemented using a 2D array."; 
+		return "Conway's Game of Life.\nImplemented using a 2D array.";
 	}
 }
