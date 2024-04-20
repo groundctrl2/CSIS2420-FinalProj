@@ -18,10 +18,9 @@ public class AmoebaLife implements ILife {
 	private static final int GROWTH_STAGE_1 = 10; // 5 wide stage
 	private static final int GROWTH_STAGE_2 = 20; // 7 wide stage
 	private static final int GROWTH_STAGE_3 = 30; // Cell splitting stage
-	private static final CellState COLOR_1 = CellState.BLUE; // Food cells
-	private static final CellState COLOR_2 = CellState.GREEN; // Body cells
-	private static final CellState COLOR_3 = CellState.RED; // Nucleus cells
-
+	private static final CellState FOOD = CellState.BLUE; // Food cells
+	private static final CellState BODY = CellState.GREEN; // Body cells
+	private static final CellState NUCLEUS = CellState.RED; // Nucleus cells
 
 	@Override
 	public void resize(int nrows, int ncols) {
@@ -120,13 +119,13 @@ public class AmoebaLife implements ILife {
 		clear();
 
 		// 3 Nuclei
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 3; i++) {
 			int randomInt = RANDOM.nextInt(nrows * ncols);
-			cells[randomInt] = COLOR_3;
+			cells[randomInt] = NUCLEUS;
 			setGrowthStage(convertToRow(randomInt), convertToCol(randomInt));
 		}
 		// 1 Food
-		cells[RANDOM.nextInt(nrows * ncols)] = COLOR_1;
+		cells[RANDOM.nextInt(nrows * ncols)] = FOOD;
 	}
 
 	/**
@@ -208,9 +207,9 @@ public class AmoebaLife implements ILife {
 	 */
 	private void fillBody(int row, int col) {
 		int cell = convertToIndex(row, col);
-		if (cells[cell] != COLOR_3) {
-			cells[cell] = COLOR_2;
-			queue.enqueue(new Cell(row, col, COLOR_2));
+		if (cells[cell] != NUCLEUS) {
+			cells[cell] = BODY;
+			queue.enqueue(new Cell(row, col, BODY));
 		}
 	}
 
@@ -227,13 +226,16 @@ public class AmoebaLife implements ILife {
 	@Override
 	public boolean step(Callback action) {
 		ArrayList<Integer> foodIndexes = new ArrayList<>();
-		alreadyMoved = new ArrayList<>();
+		alreadyMoved = new ArrayList<>(); // Stores movements to prevent multiple movements in one
+		                                  // step.
 		int nucleusCount = 0;
+		int deadCellsSkipped = 0; // Counts dead cells skipped each step.
+		int noMoreFood = 0; // Counts steps without food for population control.
 
 		for (int i = 0; i < cells.length; i++) {
-			if (cells[i] == COLOR_3)
+			if (cells[i] == NUCLEUS)
 				nucleusCount++;
-			if (cells[i] == COLOR_1)
+			if (cells[i] == FOOD)
 				foodIndexes.add(i);
 		}
 
@@ -245,31 +247,47 @@ public class AmoebaLife implements ILife {
 				int col = convertToCol(current);
 
 				// If cell food, stay food and float around.
-				if (cells[current] == COLOR_1) {
-					// Get all possible positions
-					ArrayList<Integer> availablePositions = getPossiblePositions(current);
+				if (cells[current] == FOOD) {
+					// Chance to float around.
+					if (RANDOM.nextInt(4) == 0) {
+						// Get all possible positions
+						ArrayList<Integer> availablePositions = getPossiblePositions(current);
 
-					// Pick a random position for next position.
-					int nextPosition = availablePositions
-					    .get(RANDOM.nextInt(availablePositions.size()));
+						// Pick a random position for next position.
+						int nextPosition = availablePositions
+						    .get(RANDOM.nextInt(availablePositions.size()));
 
-					queue.enqueue(new Cell(convertToRow(nextPosition), convertToCol(nextPosition),
-					    COLOR_1));
+						queue.enqueue(
+						    new Cell(convertToRow(nextPosition), convertToCol(nextPosition), FOOD));
+					}
+					// Else stay in place.
+					else
+						queue.enqueue(new Cell(convertToRow(current), convertToCol(current), FOOD));
 				}
 				// If cell dead/empty or body and alone, chance to become food if all dead.
-				else if (cells[current] != COLOR_3) {
-					// Find whether cell is alone
-					boolean alone = true;
-					for (Integer neighbor : world.adj(current))
-						if (cells[neighbor] != CellState.DEAD)
-							alone = false;
+				else if (cells[current] != NUCLEUS)
+					// Skip most cells (helps with performance & random spawn chance).
+					if (deadCellsSkipped < nrows * ncols)
+						if (cells[current] != BODY) {
+							deadCellsSkipped = 0;
 
-					if (RANDOM.nextInt(6000) == 0 && alone) // 1 in 6000 chance of becoming food.
-						queue.enqueue(new Cell(row, col, COLOR_1));
-				}
+							// Find whether cell is alone.
+							boolean alone = true;
+							for (Integer neighbor : world.adj(current))
+								if (cells[neighbor] != CellState.DEAD)
+									alone = false;
+
+							// Chance of becoming food.
+							if (RANDOM.nextInt(ncols * nrows * 6) == 0 && alone)
+								queue.enqueue(new Cell(row, col, FOOD));
+						}
+						else
+							deadCellsSkipped++;
+					else
+						deadCellsSkipped++;
 				// Else cell is nucleus.
 				else {
-					// If there's food to get, targer/eat it.
+					// If there's food to get, target/eat it.
 					if (foodIndexes.size() > 0) {
 						// Find closest food.
 						BreadthFirstPaths bfs = new BreadthFirstPaths(world, current);
@@ -282,15 +300,8 @@ public class AmoebaLife implements ILife {
 								targetDistance = bfs.distTo(food);
 							}
 
-						// If population too high, kill the babies until low enough.
-						if (nucleusCount > 50 && amoebaInfo[current][0] == 1
-						    && RANDOM.nextBoolean()) {
-							cells[current] = CellState.DEAD;
-							queue.enqueue(new Cell(row, col, CellState.DEAD));
-							nucleusCount--;
-						}
 						// If too big, split into 2 nucleus cells.
-						else if (amoebaInfo[current][0] > GROWTH_STAGE_3) {
+						if (amoebaInfo[current][0] > GROWTH_STAGE_3) {
 							// Get all possible positions
 							ArrayList<Integer> availablePositions = getPossiblePositions(current);
 
@@ -299,7 +310,7 @@ public class AmoebaLife implements ILife {
 							    .get(RANDOM.nextInt(availablePositions.size()));
 
 							// Keep original cell with the default growth stage and hunger.
-							queue.enqueue(new Cell(row, col, COLOR_3));
+							queue.enqueue(new Cell(row, col, NUCLEUS));
 							setGrowthStage(row, col);
 							amoebaInfo[current][0] = 1;
 							amoebaInfo[current][1] = 1;
@@ -308,28 +319,29 @@ public class AmoebaLife implements ILife {
 							int twinRow = convertToRow(twinPosition);
 							int twinCol = convertToCol(twinPosition);
 
-							cells[twinPosition] = COLOR_3;
-							queue.enqueue(new Cell(twinRow, twinCol, COLOR_3));
+							cells[twinPosition] = NUCLEUS;
+							queue.enqueue(new Cell(twinRow, twinCol, NUCLEUS));
 							setGrowthStage(twinRow, twinCol);
 							amoebaInfo[twinPosition][0] = 1;
 							amoebaInfo[twinPosition][1] = 1;
 						}
 						// Growth Stage default eating.
-						else if (targetDistance <= 3) {
+						else if (targetDistance <= 2) {
 							eat(current, target);
 						}
 						// Growth Stage 1 eating.
-						else if (targetDistance <= 4 && amoebaInfo[current][0] > GROWTH_STAGE_1) {
+						else if (targetDistance <= 3 && amoebaInfo[current][0] > GROWTH_STAGE_1) {
 							eat(current, target);
 						}
 						// Growth Stage 2 eating.
-						else if (targetDistance <= 5 && amoebaInfo[current][0] > GROWTH_STAGE_2) {
+						else if (targetDistance <= 4 && amoebaInfo[current][0] > GROWTH_STAGE_2) {
 							eat(current, target);
 						}
 						// Continue targeting.
 						else {
 							amoebaInfo[current][1]++; // Add 1 to hunger.
-							int nextPosition = current;
+							int bestPosition = current;
+							int alternativePosition = current;
 
 							// Get all possible positions
 							ArrayList<Integer> availablePositions = getPossiblePositions(current);
@@ -341,23 +353,45 @@ public class AmoebaLife implements ILife {
 								    neighbor);
 								if (currentDistance > neighborPath.distTo(target)) {
 									currentDistance = neighborPath.distTo(target);
-									nextPosition = neighbor;
+									if (bestPosition != current)
+										alternativePosition = bestPosition;
+									bestPosition = neighbor;
 								}
 							}
 
-							move(current, nextPosition);
+							// If best position gets/stays too close to another nucleus, move to the
+							// alternative position.
+							if (getPossiblePositions(bestPosition)
+							    .size() >= getPossiblePositions(alternativePosition).size() - 1)
+								move(current, bestPosition);
+							else
+								move(current, alternativePosition);
 						}
 					}
-					// Else no food to eat, move randomly.
+					// Else no food to eat, baby dies or move randomly.
 					else {
-						// Get all possible random positions
-						ArrayList<Integer> availablePositions = getPossiblePositions(current);
+						// If population too high and food is running out too frequently, kill the
+						// babies randomly until level.
+						if ((nucleusCount > (nrows * ncols) / 50 && amoebaInfo[current][0] == 1)
+						     || (noMoreFood > 50 && amoebaInfo[current][0] == 1)) {
+							cells[current] = CellState.DEAD;
+							queue.enqueue(new Cell(row, col, CellState.DEAD));
+							nucleusCount--;
+							noMoreFood = 0;
+						}
+						else {
+							// Get all possible random positions
+							ArrayList<Integer> availablePositions = getPossiblePositions(current);
 
-						// Pick a random position for next position.
-						int randomPosition = availablePositions
-						    .get(RANDOM.nextInt(availablePositions.size()));
-						move(current, randomPosition);
+							// Pick a random position for next position.
+							int randomPosition = availablePositions
+							    .get(RANDOM.nextInt(availablePositions.size()));
+							move(current, randomPosition);
+						}
+						
+						noMoreFood++;
 					}
+					setGrowthStage(row, col);
 				}
 			}
 		}
@@ -393,7 +427,7 @@ public class AmoebaLife implements ILife {
 		cells[target] = CellState.DEAD;
 		queue.enqueue(new Cell(convertToRow(target), convertToCol(target), CellState.DEAD));
 		// Keep the nucleus.
-		queue.enqueue(new Cell(row, col, COLOR_3));
+		queue.enqueue(new Cell(row, col, NUCLEUS));
 		setGrowthStage(row, col);
 	}
 
@@ -409,7 +443,7 @@ public class AmoebaLife implements ILife {
 
 		var neighbors = world.adj(current);
 		for (int neighbor : neighbors) {
-			if (cells[neighbor] != COLOR_3)
+			if (cells[neighbor] != NUCLEUS)
 				availablePositions.add(neighbor);
 		}
 		if (availablePositions.size() == 0)
@@ -429,10 +463,10 @@ public class AmoebaLife implements ILife {
 		int newCol = convertToCol(nextPosition);
 
 		// Move nucleus cell.
-		cells[current] = COLOR_2;
-		queue.enqueue(new Cell(newRow, newCol, COLOR_2));
-		cells[nextPosition] = COLOR_3;
-		queue.enqueue(new Cell(newRow, newCol, COLOR_3));
+		cells[current] = BODY;
+		queue.enqueue(new Cell(newRow, newCol, BODY));
+		cells[nextPosition] = NUCLEUS;
+		queue.enqueue(new Cell(newRow, newCol, NUCLEUS));
 		// Set body cells.
 		setGrowthStage(newRow, newCol);
 		// Transfer info and mark that cell has already been moved.
@@ -450,7 +484,7 @@ public class AmoebaLife implements ILife {
 	public long populationCount() {
 		long count = 0;
 		for (var state : cells)
-			if (state == COLOR_3)
+			if (state == NUCLEUS)
 				count++;
 		return count;
 	}
