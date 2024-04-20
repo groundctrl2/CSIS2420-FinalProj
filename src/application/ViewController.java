@@ -110,7 +110,7 @@ public class ViewController {
 	private Grid grid;
 
 	// handle for the implementation of the simulation itself
-	private ILife model = new model.VampireLife();
+	private ILife model = new model.GraphLife();
 
 	// for access from the grid
 	public ILife getModel() {
