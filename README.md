@@ -1,2 +1,4 @@
 # CSIS2420_FinalProj
-Implementation of Conway's Game of Life made with a Graph (Princeton's Algs4)
+Graph-based implementation of Conway's Game of Life and other cellular automata. 
+
+Influenced by Princeton's Algs4.
